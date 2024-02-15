@@ -15,10 +15,8 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
-from advancedbilling.models.subscription_response import SubscriptionResponse
 from advancedbilling.models.subscription_migration_preview_response import SubscriptionMigrationPreviewResponse
+from advancedbilling.models.subscription_response import SubscriptionResponse
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
 
@@ -27,6 +25,63 @@ class SubscriptionProductsController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(SubscriptionProductsController, self).__init__(config)
+
+    def preview_subscription_product_migration(self,
+                                               subscription_id,
+                                               body=None):
+        """Does a POST request to /subscriptions/{subscription_id}/migrations/preview.json.
+
+        ## Previewing a future date
+        It is also possible to preview the migration for a date in the future,
+        as long as it's still within the subscription's current billing
+        period, by passing a `proration_date` along with the request (eg:
+        `"proration_date": "2020-12-18T18:25:43.511Z"`).
+        This will calculate the prorated adjustment, charge, payment and
+        credit applied values assuming the migration is done at that date in
+        the future as opposed to right now.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            body (SubscriptionMigrationPreviewRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            SubscriptionMigrationPreviewResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/migrations/preview.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionMigrationPreviewResponse.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
 
     def migrate_subscription_product(self,
                                      subscription_id,
@@ -162,68 +217,11 @@ class SubscriptionProductsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionResponse.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def preview_subscription_product_migration(self,
-                                               subscription_id,
-                                               body=None):
-        """Does a POST request to /subscriptions/{subscription_id}/migrations/preview.json.
-
-        ## Previewing a future date
-        It is also possible to preview the migration for a date in the future,
-        as long as it's still within the subscription's current billing
-        period, by passing a `proration_date` along with the request (eg:
-        `"proration_date": "2020-12-18T18:25:43.511Z"`).
-        This will calculate the prorated adjustment, charge, payment and
-        credit applied values assuming the migration is done at that date in
-        the future as opposed to right now.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            body (SubscriptionMigrationPreviewRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            SubscriptionMigrationPreviewResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/migrations/preview.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionMigrationPreviewResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()

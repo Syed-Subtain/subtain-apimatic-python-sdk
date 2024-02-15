@@ -16,8 +16,6 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.customer_response import CustomerResponse
 from advancedbilling.models.subscription_response import SubscriptionResponse
 from advancedbilling.exceptions.customer_error_response_exception import CustomerErrorResponseException
@@ -98,7 +96,7 @@ class CustomersController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -224,12 +222,93 @@ class CustomersController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(CustomerResponse.from_dictionary)
+        ).execute()
+
+    def read_customer_by_reference(self,
+                                   reference):
+        """Does a GET request to /customers/lookup.json.
+
+        Use this method to return the customer object if you have the unique
+        **Reference ID (Your App)** value handy. It will return a single
+        match.
+
+        Args:
+            reference (str): Customer reference
+
+        Returns:
+            CustomerResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/customers/lookup.json')
+            .http_method(HttpMethodEnum.GET)
+            .query_param(Parameter()
+                         .key('reference')
+                         .value(reference)
+                         .is_required(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(CustomerResponse.from_dictionary)
+        ).execute()
+
+    def list_customer_subscriptions(self,
+                                    customer_id):
+        """Does a GET request to /customers/{customer_id}/subscriptions.json.
+
+        This method lists all subscriptions that belong to a customer.
+
+        Args:
+            customer_id (int): The Chargify id of the customer
+
+        Returns:
+            List[SubscriptionResponse]: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/customers/{customer_id}/subscriptions.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('customer_id')
+                            .value(customer_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionResponse.from_dictionary)
         ).execute()
 
     def read_customer(self,
@@ -265,7 +344,7 @@ class CustomersController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -314,7 +393,7 @@ class CustomersController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -353,89 +432,8 @@ class CustomersController(BaseController):
                             .value(id)
                             .is_required(True)
                             .should_encode(True))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
-        ).execute()
-
-    def read_customer_by_reference(self,
-                                   reference):
-        """Does a GET request to /customers/lookup.json.
-
-        Use this method to return the customer object if you have the unique
-        **Reference ID (Your App)** value handy. It will return a single
-        match.
-
-        Args:
-            reference (str): Customer reference
-
-        Returns:
-            CustomerResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/customers/lookup.json')
-            .http_method(HttpMethodEnum.GET)
-            .query_param(Parameter()
-                         .key('reference')
-                         .value(reference)
-                         .is_required(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(CustomerResponse.from_dictionary)
-        ).execute()
-
-    def list_customer_subscriptions(self,
-                                    customer_id):
-        """Does a GET request to /customers/{customer_id}/subscriptions.json.
-
-        This method lists all subscriptions that belong to a customer.
-
-        Args:
-            customer_id (int): The Chargify id of the customer
-
-        Returns:
-            List[SubscriptionResponse]: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/customers/{customer_id}/subscriptions.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('customer_id')
-                            .value(customer_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionResponse.from_dictionary)
         ).execute()

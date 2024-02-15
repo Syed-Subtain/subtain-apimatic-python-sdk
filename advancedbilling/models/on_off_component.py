@@ -9,7 +9,6 @@ This file was automatically generated for Maxio by APIMATIC v3.0 (
 from advancedbilling.api_helper import APIHelper
 from advancedbilling.models.component_price_point_item import ComponentPricePointItem
 from advancedbilling.models.price import Price
-from advancedbilling.models.pricing_scheme import PricingScheme
 
 
 class OnOffComponent(object):
@@ -174,6 +173,7 @@ class OnOffComponent(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -236,12 +236,13 @@ class OnOffComponent(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.name, type_callable=lambda value: isinstance(value, str)) \
-                and UnionTypeLookUp.get('OnOffComponentPricingScheme').validate(dictionary.pricing_scheme)
+                and UnionTypeLookUp.get('OnOffComponentPricingScheme').validate(dictionary.pricing_scheme).is_valid
 
         if not isinstance(dictionary, dict):
             return False
 
         return APIHelper.is_valid_type(value=dictionary.get('name'), type_callable=lambda value: isinstance(value, str)) \
-            and UnionTypeLookUp.get('OnOffComponentPricingScheme').validate(dictionary.get('pricing_scheme'))
+            and UnionTypeLookUp.get('OnOffComponentPricingScheme').validate(dictionary.get('pricing_scheme')).is_valid

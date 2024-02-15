@@ -15,15 +15,13 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.create_payment_profile_response import CreatePaymentProfileResponse
-from advancedbilling.models.list_payment_profiles_response import ListPaymentProfilesResponse
+from advancedbilling.models.get_one_time_token_request import GetOneTimeTokenRequest
 from advancedbilling.models.read_payment_profile_response import ReadPaymentProfileResponse
 from advancedbilling.models.update_payment_profile_response import UpdatePaymentProfileResponse
-from advancedbilling.models.bank_account_response import BankAccountResponse
 from advancedbilling.models.payment_profile_response import PaymentProfileResponse
-from advancedbilling.models.get_one_time_token_request import GetOneTimeTokenRequest
+from advancedbilling.models.list_payment_profiles_response import ListPaymentProfilesResponse
+from advancedbilling.models.bank_account_response import BankAccountResponse
 from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
@@ -370,7 +368,7 @@ class PaymentProfilesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -379,40 +377,19 @@ class PaymentProfilesController(BaseController):
             .local_error('404', 'Not Found', APIException)
         ).execute()
 
-    def list_payment_profiles(self,
-                              options=dict()):
-        """Does a GET request to /payment_profiles.json.
+    def delete_unused_payment_profile(self,
+                                      payment_profile_id):
+        """Does a DELETE request to /payment_profiles/{payment_profile_id}.json.
 
-        This method will return all of the active `payment_profiles` for a
-        Site, or for one Customer within a site.  If no payment profiles are
-        found, this endpoint will return an empty array, not a 404.
+        Deletes an unused payment profile.
+        If the payment profile is in use by one or more subscriptions or
+        groups, a 422 and error message will be returned.
 
         Args:
-            options (dict, optional): Key-value pairs for any of the
-                parameters to this API Endpoint. All parameters to the
-                endpoint are supplied through the dictionary with their names
-                being the key and their desired values being the value. A list
-                of parameters that can be used are::
-
-                    page -- int -- Result records are organized in pages. By
-                        default, the first page of results is displayed. The
-                        page parameter specifies a page number of results to
-                        fetch. You can start navigating through the pages to
-                        consume the results. You do this by passing in a page
-                        parameter. Retrieve the next page by adding ?page=2 to
-                        the query string. If there are no results to return,
-                        then an empty result set will be returned. Use in
-                        query `page=1`.
-                    per_page -- int -- This parameter indicates how many
-                        records to fetch in each request. Default value is 20.
-                        The maximum allowed values is 200; any per_page value
-                        over 200 will be changed to 200. Use in query
-                        `per_page=200`.
-                    customer_id -- int -- The ID of the customer for which you
-                        wish to list payment profiles
+            payment_profile_id (str): The Chargify id of the payment profile
 
         Returns:
-            List[ListPaymentProfilesResponse]: Response from the API. OK
+            void: Response from the API. No Content
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -424,26 +401,162 @@ class PaymentProfilesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/payment_profiles.json')
+            .path('/payment_profiles/{payment_profile_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('payment_profile_id')
+                            .value(payment_profile_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def delete_subscriptions_payment_profile(self,
+                                             subscription_id,
+                                             payment_profile_id):
+        """Does a DELETE request to /subscriptions/{subscription_id}/payment_profiles/{payment_profile_id}.json.
+
+        This will delete a payment profile belonging to the customer on the
+        subscription.
+        + If the customer has multiple subscriptions, the payment profile will
+        be removed from all of them.
+        + If you delete the default payment profile for a subscription, you
+        will need to specify another payment profile to be the default through
+        the api, or either prompt the user to enter a card in the billing
+        portal or on the self-service page, or visit the Payment Details tab
+        on the subscription in the Admin UI and use the “Add New Credit Card”
+        or “Make Active Payment Method” link, (depending on whether there are
+        other cards present).
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            payment_profile_id (str): The Chargify id of the payment profile
+
+        Returns:
+            void: Response from the API. No Content
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/payment_profiles/{payment_profile_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('payment_profile_id')
+                            .value(payment_profile_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+        ).execute()
+
+    def delete_subscription_group_payment_profile(self,
+                                                  uid,
+                                                  payment_profile_id):
+        """Does a DELETE request to /subscription_groups/{uid}/payment_profiles/{payment_profile_id}.json.
+
+        This will delete a Payment Profile belonging to a Subscription Group.
+        **Note**: If the Payment Profile belongs to multiple Subscription
+        Groups and/or Subscriptions, it will be removed from all of them.
+
+        Args:
+            uid (str): The uid of the subscription group
+            payment_profile_id (str): The Chargify id of the payment profile
+
+        Returns:
+            void: Response from the API. No Content
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}/payment_profiles/{payment_profile_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('payment_profile_id')
+                            .value(payment_profile_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+        ).execute()
+
+    def read_one_time_token(self,
+                            chargify_token):
+        """Does a GET request to /one_time_tokens/{chargify_token}.json.
+
+        One Time Tokens aka Chargify Tokens house the credit card or ACH
+        (Authorize.Net or Stripe only) data for a customer.
+        You can use One Time Tokens while creating a subscription or payment
+        profile instead of passing all bank account or credit card data
+        directly to a given API endpoint.
+        To obtain a One Time Token you have to use
+        [chargify.js](https://developers.chargify.com/docs/developer-docs/ZG9jO
+        jE0NjAzNDI0-overview).
+
+        Args:
+            chargify_token (str): Chargify Token
+
+        Returns:
+            GetOneTimeTokenRequest: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/one_time_tokens/{chargify_token}.json')
             .http_method(HttpMethodEnum.GET)
-            .query_param(Parameter()
-                         .key('page')
-                         .value(options.get('page', None)))
-            .query_param(Parameter()
-                         .key('per_page')
-                         .value(options.get('per_page', None)))
-            .query_param(Parameter()
-                         .key('customer_id')
-                         .value(options.get('customer_id', None)))
+            .template_param(Parameter()
+                            .key('chargify_token')
+                            .value(chargify_token)
+                            .is_required(True)
+                            .should_encode(True))
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ListPaymentProfilesResponse.from_dictionary)
+            .deserialize_into(GetOneTimeTokenRequest.from_dictionary)
+            .local_error('404', 'Not Found', ErrorListResponseException)
         ).execute()
 
     def read_payment_profile(self,
@@ -510,7 +623,7 @@ class PaymentProfilesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -600,199 +713,12 @@ class PaymentProfilesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(UpdatePaymentProfileResponse.from_dictionary)
-        ).execute()
-
-    def delete_unused_payment_profile(self,
-                                      payment_profile_id):
-        """Does a DELETE request to /payment_profiles/{payment_profile_id}.json.
-
-        Deletes an unused payment profile.
-        If the payment profile is in use by one or more subscriptions or
-        groups, a 422 and error message will be returned.
-
-        Args:
-            payment_profile_id (str): The Chargify id of the payment profile
-
-        Returns:
-            void: Response from the API. No Content
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/payment_profiles/{payment_profile_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('payment_profile_id')
-                            .value(payment_profile_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def delete_subscriptions_payment_profile(self,
-                                             subscription_id,
-                                             payment_profile_id):
-        """Does a DELETE request to /subscriptions/{subscription_id}/payment_profiles/{payment_profile_id}.json.
-
-        This will delete a payment profile belonging to the customer on the
-        subscription.
-        + If the customer has multiple subscriptions, the payment profile will
-        be removed from all of them.
-        + If you delete the default payment profile for a subscription, you
-        will need to specify another payment profile to be the default through
-        the api, or either prompt the user to enter a card in the billing
-        portal or on the self-service page, or visit the Payment Details tab
-        on the subscription in the Admin UI and use the “Add New Credit Card”
-        or “Make Active Payment Method” link, (depending on whether there are
-        other cards present).
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            payment_profile_id (str): The Chargify id of the payment profile
-
-        Returns:
-            void: Response from the API. No Content
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/payment_profiles/{payment_profile_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('payment_profile_id')
-                            .value(payment_profile_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-        ).execute()
-
-    def verify_bank_account(self,
-                            bank_account_id,
-                            body=None):
-        """Does a PUT request to /bank_accounts/{bank_account_id}/verification.json.
-
-        Submit the two small deposit amounts the customer received in their
-        bank account in order to verify the bank account. (Stripe only)
-
-        Args:
-            bank_account_id (int): Identifier of the bank account in the
-                system.
-            body (BankAccountVerificationRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            BankAccountResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/bank_accounts/{bank_account_id}/verification.json')
-            .http_method(HttpMethodEnum.PUT)
-            .template_param(Parameter()
-                            .key('bank_account_id')
-                            .value(bank_account_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(BankAccountResponse.from_dictionary)
-            .local_error('404', 'Not Found', APIException)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def delete_subscription_group_payment_profile(self,
-                                                  uid,
-                                                  payment_profile_id):
-        """Does a DELETE request to /subscription_groups/{uid}/payment_profiles/{payment_profile_id}.json.
-
-        This will delete a Payment Profile belonging to a Subscription Group.
-        **Note**: If the Payment Profile belongs to multiple Subscription
-        Groups and/or Subscriptions, it will be removed from all of them.
-
-        Args:
-            uid (str): The uid of the subscription group
-            payment_profile_id (str): The Chargify id of the payment profile
-
-        Returns:
-            void: Response from the API. No Content
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}/payment_profiles/{payment_profile_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('payment_profile_id')
-                            .value(payment_profile_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
         ).execute()
 
     def update_subscription_default_payment_profile(self,
@@ -838,7 +764,7 @@ class PaymentProfilesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -892,7 +818,7 @@ class PaymentProfilesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -901,24 +827,40 @@ class PaymentProfilesController(BaseController):
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()
 
-    def read_one_time_token(self,
-                            chargify_token):
-        """Does a GET request to /one_time_tokens/{chargify_token}.json.
+    def list_payment_profiles(self,
+                              options=dict()):
+        """Does a GET request to /payment_profiles.json.
 
-        One Time Tokens aka Chargify Tokens house the credit card or ACH
-        (Authorize.Net or Stripe only) data for a customer.
-        You can use One Time Tokens while creating a subscription or payment
-        profile instead of passing all bank account or credit card data
-        directly to a given API endpoint.
-        To obtain a One Time Token you have to use
-        [chargify.js](https://developers.chargify.com/docs/developer-docs/ZG9jO
-        jE0NjAzNDI0-overview).
+        This method will return all of the active `payment_profiles` for a
+        Site, or for one Customer within a site.  If no payment profiles are
+        found, this endpoint will return an empty array, not a 404.
 
         Args:
-            chargify_token (str): Chargify Token
+            options (dict, optional): Key-value pairs for any of the
+                parameters to this API Endpoint. All parameters to the
+                endpoint are supplied through the dictionary with their names
+                being the key and their desired values being the value. A list
+                of parameters that can be used are::
+
+                    page -- int -- Result records are organized in pages. By
+                        default, the first page of results is displayed. The
+                        page parameter specifies a page number of results to
+                        fetch. You can start navigating through the pages to
+                        consume the results. You do this by passing in a page
+                        parameter. Retrieve the next page by adding ?page=2 to
+                        the query string. If there are no results to return,
+                        then an empty result set will be returned. Use in
+                        query `page=1`.
+                    per_page -- int -- This parameter indicates how many
+                        records to fetch in each request. Default value is 20.
+                        The maximum allowed values is 200; any per_page value
+                        over 200 will be changed to 200. Use in query
+                        `per_page=200`.
+                    customer_id -- int -- The ID of the customer for which you
+                        wish to list payment profiles
 
         Returns:
-            GetOneTimeTokenRequest: Response from the API. OK
+            List[ListPaymentProfilesResponse]: Response from the API. OK
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -930,23 +872,79 @@ class PaymentProfilesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/one_time_tokens/{chargify_token}.json')
+            .path('/payment_profiles.json')
             .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('chargify_token')
-                            .value(chargify_token)
-                            .is_required(True)
-                            .should_encode(True))
+            .query_param(Parameter()
+                         .key('page')
+                         .value(options.get('page', None)))
+            .query_param(Parameter()
+                         .key('per_page')
+                         .value(options.get('per_page', None)))
+            .query_param(Parameter()
+                         .key('customer_id')
+                         .value(options.get('customer_id', None)))
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(GetOneTimeTokenRequest.from_dictionary)
-            .local_error('404', 'Not Found', ErrorListResponseException)
+            .deserialize_into(ListPaymentProfilesResponse.from_dictionary)
+        ).execute()
+
+    def verify_bank_account(self,
+                            bank_account_id,
+                            body=None):
+        """Does a PUT request to /bank_accounts/{bank_account_id}/verification.json.
+
+        Submit the two small deposit amounts the customer received in their
+        bank account in order to verify the bank account. (Stripe only)
+
+        Args:
+            bank_account_id (int): Identifier of the bank account in the
+                system.
+            body (BankAccountVerificationRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            BankAccountResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/bank_accounts/{bank_account_id}/verification.json')
+            .http_method(HttpMethodEnum.PUT)
+            .template_param(Parameter()
+                            .key('bank_account_id')
+                            .value(bank_account_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(BankAccountResponse.from_dictionary)
+            .local_error('404', 'Not Found', APIException)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()
 
     def send_request_update_payment_email(self,
@@ -992,7 +990,7 @@ class PaymentProfilesController(BaseController):
                             .value(subscription_id)
                             .is_required(True)
                             .should_encode(True))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

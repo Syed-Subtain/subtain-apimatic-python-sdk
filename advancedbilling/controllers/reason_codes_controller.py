@@ -15,12 +15,10 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.reason_code_response import ReasonCodeResponse
 from advancedbilling.models.reason_codes_json_response import ReasonCodesJsonResponse
-from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 from advancedbilling.exceptions.api_exception import APIException
+from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
 
 class ReasonCodesController(BaseController):
@@ -29,29 +27,16 @@ class ReasonCodesController(BaseController):
     def __init__(self, config):
         super(ReasonCodesController, self).__init__(config)
 
-    def create_reason_code(self,
-                           body=None):
-        """Does a POST request to /reason_codes.json.
+    def read_reason_code(self,
+                         reason_code_id):
+        """Does a GET request to /reason_codes/{reason_code_id}.json.
 
-        # Reason Codes Intro
-        ReasonCodes are a way to gain a high level view of why your customers
-        are cancelling the subcription to your product or service.
-        Add a set of churn reason codes to be displayed in-app and/or the
-        Chargify Billing Portal. As your subscribers decide to cancel their
-        subscription, learn why they decided to cancel.
-        ## Reason Code Documentation
-        Full documentation on how Reason Codes operate within Chargify can be
-        located under the following links.
-        [Churn Reason
-        Codes](https://chargify.zendesk.com/hc/en-us/articles/4407896775579#chu
-        rn-reason-codes)
-        ## Create Reason Code
-        This method gives a merchant the option to create a reason codes for a
-        given Site.
+        This method gives a merchant the option to retrieve a list of a
+        particular code for a given Site by providing the unique numerical ID
+        of the code.
 
         Args:
-            body (CreateReasonCodeRequest, optional): TODO: type description
-                here.
+            reason_code_id (int): The Chargify id of the reason code
 
         Returns:
             ReasonCodeResponse: Response from the API. OK
@@ -66,24 +51,66 @@ class ReasonCodesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/reason_codes.json')
-            .http_method(HttpMethodEnum.POST)
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
+            .path('/reason_codes/{reason_code_id}.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('reason_code_id')
+                            .value(reason_code_id)
+                            .is_required(True)
+                            .should_encode(True))
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ReasonCodeResponse.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+            .local_error('404', 'Not Found', APIException)
+        ).execute()
+
+    def delete_reason_code(self,
+                           reason_code_id):
+        """Does a DELETE request to /reason_codes/{reason_code_id}.json.
+
+        This method gives a merchant the option to delete one reason code from
+        the Churn Reason Codes. This code will be immediately removed. This
+        action is not reversable.
+
+        Args:
+            reason_code_id (int): The Chargify id of the reason code
+
+        Returns:
+            ReasonCodesJsonResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/reason_codes/{reason_code_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('reason_code_id')
+                            .value(reason_code_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ReasonCodesJsonResponse.from_dictionary)
+            .local_error('404', 'Not Found', APIException)
         ).execute()
 
     def list_reason_codes(self,
@@ -139,55 +166,12 @@ class ReasonCodesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ReasonCodeResponse.from_dictionary)
-        ).execute()
-
-    def read_reason_code(self,
-                         reason_code_id):
-        """Does a GET request to /reason_codes/{reason_code_id}.json.
-
-        This method gives a merchant the option to retrieve a list of a
-        particular code for a given Site by providing the unique numerical ID
-        of the code.
-
-        Args:
-            reason_code_id (int): The Chargify id of the reason code
-
-        Returns:
-            ReasonCodeResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/reason_codes/{reason_code_id}.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('reason_code_id')
-                            .value(reason_code_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ReasonCodeResponse.from_dictionary)
-            .local_error('404', 'Not Found', APIException)
         ).execute()
 
     def update_reason_code(self,
@@ -232,7 +216,7 @@ class ReasonCodesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -241,19 +225,32 @@ class ReasonCodesController(BaseController):
             .local_error('404', 'Not Found', APIException)
         ).execute()
 
-    def delete_reason_code(self,
-                           reason_code_id):
-        """Does a DELETE request to /reason_codes/{reason_code_id}.json.
+    def create_reason_code(self,
+                           body=None):
+        """Does a POST request to /reason_codes.json.
 
-        This method gives a merchant the option to delete one reason code from
-        the Churn Reason Codes. This code will be immediately removed. This
-        action is not reversable.
+        # Reason Codes Intro
+        ReasonCodes are a way to gain a high level view of why your customers
+        are cancelling the subcription to your product or service.
+        Add a set of churn reason codes to be displayed in-app and/or the
+        Chargify Billing Portal. As your subscribers decide to cancel their
+        subscription, learn why they decided to cancel.
+        ## Reason Code Documentation
+        Full documentation on how Reason Codes operate within Chargify can be
+        located under the following links.
+        [Churn Reason
+        Codes](https://chargify.zendesk.com/hc/en-us/articles/4407896775579#chu
+        rn-reason-codes)
+        ## Create Reason Code
+        This method gives a merchant the option to create a reason codes for a
+        given Site.
 
         Args:
-            reason_code_id (int): The Chargify id of the reason code
+            body (CreateReasonCodeRequest, optional): TODO: type description
+                here.
 
         Returns:
-            ReasonCodesJsonResponse: Response from the API. OK
+            ReasonCodeResponse: Response from the API. OK
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -265,21 +262,22 @@ class ReasonCodesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/reason_codes/{reason_code_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('reason_code_id')
-                            .value(reason_code_id)
-                            .is_required(True)
-                            .should_encode(True))
+            .path('/reason_codes.json')
+            .http_method(HttpMethodEnum.POST)
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ReasonCodesJsonResponse.from_dictionary)
-            .local_error('404', 'Not Found', APIException)
+            .deserialize_into(ReasonCodeResponse.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()

@@ -15,13 +15,11 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
+from advancedbilling.models.replay_webhooks_response import ReplayWebhooksResponse
+from advancedbilling.models.endpoint import Endpoint
 from advancedbilling.models.webhook_response import WebhookResponse
 from advancedbilling.models.enable_webhooks_response import EnableWebhooksResponse
-from advancedbilling.models.replay_webhooks_response import ReplayWebhooksResponse
 from advancedbilling.models.endpoint_response import EndpointResponse
-from advancedbilling.models.endpoint import Endpoint
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 from advancedbilling.exceptions.api_exception import APIException
 
@@ -31,6 +29,83 @@ class WebhooksController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(WebhooksController, self).__init__(config)
+
+    def replay_webhooks(self,
+                        body=None):
+        """Does a POST request to /webhooks/replay.json.
+
+        Posting to the replay endpoint does not immediately resend the
+        webhooks. They are added to a queue and will be sent as soon as
+        possible, depending on available system resources.
+        You may submit an array of up to 1000 webhook IDs to replay in the
+        request.
+
+        Args:
+            body (ReplayWebhooksRequest, optional): TODO: type description
+                here.
+
+        Returns:
+            ReplayWebhooksResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/webhooks/replay.json')
+            .http_method(HttpMethodEnum.POST)
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ReplayWebhooksResponse.from_dictionary)
+        ).execute()
+
+    def list_endpoints(self):
+        """Does a GET request to /endpoints.json.
+
+        This method returns created endpoints for site.
+
+        Returns:
+            List[Endpoint]: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/endpoints.json')
+            .http_method(HttpMethodEnum.GET)
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(Endpoint.from_dictionary)
+        ).execute()
 
     def list_webhooks(self,
                       options=dict()):
@@ -134,7 +209,7 @@ class WebhooksController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -176,58 +251,12 @@ class WebhooksController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(EnableWebhooksResponse.from_dictionary)
-        ).execute()
-
-    def replay_webhooks(self,
-                        body=None):
-        """Does a POST request to /webhooks/replay.json.
-
-        Posting to the replay endpoint does not immediately resend the
-        webhooks. They are added to a queue and will be sent as soon as
-        possible, depending on available system resources.
-        You may submit an array of up to 1000 webhook IDs to replay in the
-        request.
-
-        Args:
-            body (ReplayWebhooksRequest, optional): TODO: type description
-                here.
-
-        Returns:
-            ReplayWebhooksResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/webhooks/replay.json')
-            .http_method(HttpMethodEnum.POST)
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ReplayWebhooksResponse.from_dictionary)
         ).execute()
 
     def create_endpoint(self,
@@ -269,44 +298,13 @@ class WebhooksController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(EndpointResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def list_endpoints(self):
-        """Does a GET request to /endpoints.json.
-
-        This method returns created endpoints for site.
-
-        Returns:
-            List[Endpoint]: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/endpoints.json')
-            .http_method(HttpMethodEnum.GET)
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(Endpoint.from_dictionary)
         ).execute()
 
     def update_endpoint(self,
@@ -362,7 +360,7 @@ class WebhooksController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

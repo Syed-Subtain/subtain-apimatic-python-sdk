@@ -15,15 +15,13 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
-from advancedbilling.models.customer_response import CustomerResponse
+from advancedbilling.models.revoked_invitation import RevokedInvitation
 from advancedbilling.models.portal_management_link import PortalManagementLink
 from advancedbilling.models.resent_invitation import ResentInvitation
-from advancedbilling.models.revoked_invitation import RevokedInvitation
+from advancedbilling.models.customer_response import CustomerResponse
+from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 from advancedbilling.exceptions.too_many_management_link_requests_error_exception import TooManyManagementLinkRequestsErrorException
-from advancedbilling.exceptions.api_exception import APIException
 
 
 class BillingPortalController(BaseController):
@@ -31,6 +29,159 @@ class BillingPortalController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(BillingPortalController, self).__init__(config)
+
+    def revoke_billing_portal_access(self,
+                                     customer_id):
+        """Does a DELETE request to /portal/customers/{customer_id}/invitations/revoke.json.
+
+        You can revoke a customer's Billing Portal invitation.
+        If you attempt to revoke an invitation when the Billing Portal is
+        already disabled for a Customer, you will receive a 422 error
+        response.
+        ## Limitations
+        This endpoint will only return a JSON response.
+
+        Args:
+            customer_id (int): The Chargify id of the customer
+
+        Returns:
+            RevokedInvitation: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/portal/customers/{customer_id}/invitations/revoke.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('customer_id')
+                            .value(customer_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(RevokedInvitation.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', APIException)
+        ).execute()
+
+    def read_billing_portal_link(self,
+                                 customer_id):
+        """Does a GET request to /portal/customers/{customer_id}/management_link.json.
+
+        This method will provide to the API user the exact URL required for a
+        subscriber to access the Billing Portal.
+        ## Rules for Management Link API
+        + When retrieving a management URL, multiple requests for the same
+        customer in a short period will return the **same** URL
+        + We will not generate a new URL for 15 days
+        + You must cache and remember this URL if you are going to need it
+        again within 15 days
+        + Only request a new URL after the `new_link_available_at` date
+        + You are limited to 15 requests for the same URL. If you make more
+        than 15 requests before `new_link_available_at`, you will be blocked
+        from further Management URL requests (with a response code `429`)
+
+        Args:
+            customer_id (int): The Chargify id of the customer
+
+        Returns:
+            PortalManagementLink: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/portal/customers/{customer_id}/management_link.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('customer_id')
+                            .value(customer_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(PortalManagementLink.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+            .local_error('429', 'Too Many Requests', TooManyManagementLinkRequestsErrorException)
+        ).execute()
+
+    def resend_billing_portal_invitation(self,
+                                         customer_id):
+        """Does a POST request to /portal/customers/{customer_id}/invitations/invite.json.
+
+        You can resend a customer's Billing Portal invitation.
+        If you attempt to resend an invitation 5 times within 30 minutes, you
+        will receive a `422` response with `error` message in the body.
+        If you attempt to resend an invitation when the Billing Portal is
+        already disabled for a Customer, you will receive a `422` error
+        response.
+        If you attempt to resend an invitation when the Billing Portal is
+        already disabled for a Customer, you will receive a `422` error
+        response.
+        If you attempt to resend an invitation when the Customer does not
+        exist a Customer, you will receive a `404` error response.
+        ## Limitations
+        This endpoint will only return a JSON response.
+
+        Args:
+            customer_id (int): The Chargify id of the customer
+
+        Returns:
+            ResentInvitation: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/portal/customers/{customer_id}/invitations/invite.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('customer_id')
+                            .value(customer_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ResentInvitation.from_dictionary)
+            .local_error('404', 'Not Found', APIException)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
 
     def enable_billing_portal_for_customer(self,
                                            customer_id,
@@ -96,164 +247,11 @@ class BillingPortalController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(CustomerResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def read_billing_portal_link(self,
-                                 customer_id):
-        """Does a GET request to /portal/customers/{customer_id}/management_link.json.
-
-        This method will provide to the API user the exact URL required for a
-        subscriber to access the Billing Portal.
-        ## Rules for Management Link API
-        + When retrieving a management URL, multiple requests for the same
-        customer in a short period will return the **same** URL
-        + We will not generate a new URL for 15 days
-        + You must cache and remember this URL if you are going to need it
-        again within 15 days
-        + Only request a new URL after the `new_link_available_at` date
-        + You are limited to 15 requests for the same URL. If you make more
-        than 15 requests before `new_link_available_at`, you will be blocked
-        from further Management URL requests (with a response code `429`)
-
-        Args:
-            customer_id (int): The Chargify id of the customer
-
-        Returns:
-            PortalManagementLink: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/portal/customers/{customer_id}/management_link.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('customer_id')
-                            .value(customer_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(PortalManagementLink.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-            .local_error('429', 'Too Many Requests', TooManyManagementLinkRequestsErrorException)
-        ).execute()
-
-    def resend_billing_portal_invitation(self,
-                                         customer_id):
-        """Does a POST request to /portal/customers/{customer_id}/invitations/invite.json.
-
-        You can resend a customer's Billing Portal invitation.
-        If you attempt to resend an invitation 5 times within 30 minutes, you
-        will receive a `422` response with `error` message in the body.
-        If you attempt to resend an invitation when the Billing Portal is
-        already disabled for a Customer, you will receive a `422` error
-        response.
-        If you attempt to resend an invitation when the Billing Portal is
-        already disabled for a Customer, you will receive a `422` error
-        response.
-        If you attempt to resend an invitation when the Customer does not
-        exist a Customer, you will receive a `404` error response.
-        ## Limitations
-        This endpoint will only return a JSON response.
-
-        Args:
-            customer_id (int): The Chargify id of the customer
-
-        Returns:
-            ResentInvitation: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/portal/customers/{customer_id}/invitations/invite.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('customer_id')
-                            .value(customer_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ResentInvitation.from_dictionary)
-            .local_error('404', 'Not Found', APIException)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def revoke_billing_portal_access(self,
-                                     customer_id):
-        """Does a DELETE request to /portal/customers/{customer_id}/invitations/revoke.json.
-
-        You can revoke a customer's Billing Portal invitation.
-        If you attempt to revoke an invitation when the Billing Portal is
-        already disabled for a Customer, you will receive a 422 error
-        response.
-        ## Limitations
-        This endpoint will only return a JSON response.
-
-        Args:
-            customer_id (int): The Chargify id of the customer
-
-        Returns:
-            RevokedInvitation: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/portal/customers/{customer_id}/invitations/revoke.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('customer_id')
-                            .value(customer_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(RevokedInvitation.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', APIException)
         ).execute()

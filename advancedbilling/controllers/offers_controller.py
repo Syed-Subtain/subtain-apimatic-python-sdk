@@ -15,8 +15,6 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.offer_response import OfferResponse
 from advancedbilling.models.list_offers_response import ListOffersResponse
 from advancedbilling.exceptions.error_map_response_exception import ErrorMapResponseException
@@ -76,7 +74,7 @@ class OffersController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -108,7 +106,7 @@ class OffersController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -150,49 +148,12 @@ class OffersController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(OfferResponse.from_dictionary)
-            .local_error('401', 'Unauthorized', APIException)
-        ).execute()
-
-    def archive_offer(self,
-                      offer_id):
-        """Does a PUT request to /offers/{offer_id}/archive.json.
-
-        Archive an existing offer. Please provide an `offer_id` in order to
-        archive the correct item.
-
-        Args:
-            offer_id (int): The Chargify id of the offer
-
-        Returns:
-            void: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/offers/{offer_id}/archive.json')
-            .http_method(HttpMethodEnum.PUT)
-            .template_param(Parameter()
-                            .key('offer_id')
-                            .value(offer_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
             .local_error('401', 'Unauthorized', APIException)
         ).execute()
 
@@ -226,7 +187,44 @@ class OffersController(BaseController):
                             .value(offer_id)
                             .is_required(True)
                             .should_encode(True))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('401', 'Unauthorized', APIException)
+        ).execute()
+
+    def archive_offer(self,
+                      offer_id):
+        """Does a PUT request to /offers/{offer_id}/archive.json.
+
+        Archive an existing offer. Please provide an `offer_id` in order to
+        archive the correct item.
+
+        Args:
+            offer_id (int): The Chargify id of the offer
+
+        Returns:
+            void: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/offers/{offer_id}/archive.json')
+            .http_method(HttpMethodEnum.PUT)
+            .template_param(Parameter()
+                            .key('offer_id')
+                            .value(offer_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

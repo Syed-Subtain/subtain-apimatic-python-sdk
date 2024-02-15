@@ -15,8 +15,6 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.product_response import ProductResponse
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
@@ -26,6 +24,51 @@ class ProductsController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(ProductsController, self).__init__(config)
+
+    def archive_product(self,
+                        product_id):
+        """Does a DELETE request to /products/{product_id}.json.
+
+        Sending a DELETE request to this endpoint will archive the product.
+        All current subscribers will be unffected; their subscription/purchase
+        will continue to be charged monthly.
+        This will restrict the option to chose the product for purchase via
+        the Billing Portal, as well as disable Public Signup Pages for the
+        product.
+
+        Args:
+            product_id (int): The Chargify id of the product
+
+        Returns:
+            ProductResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/products/{product_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('product_id')
+                            .value(product_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProductResponse.from_dictionary)
+        ).execute()
 
     def create_product(self,
                        product_family_id,
@@ -75,7 +118,7 @@ class ProductsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -116,7 +159,7 @@ class ProductsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -173,58 +216,13 @@ class ProductsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ProductResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def archive_product(self,
-                        product_id):
-        """Does a DELETE request to /products/{product_id}.json.
-
-        Sending a DELETE request to this endpoint will archive the product.
-        All current subscribers will be unffected; their subscription/purchase
-        will continue to be charged monthly.
-        This will restrict the option to chose the product for purchase via
-        the Billing Portal, as well as disable Public Signup Pages for the
-        product.
-
-        Args:
-            product_id (int): The Chargify id of the product
-
-        Returns:
-            ProductResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/products/{product_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('product_id')
-                            .value(product_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProductResponse.from_dictionary)
         ).execute()
 
     def read_product_by_handle(self,
@@ -259,7 +257,7 @@ class ProductsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -389,7 +387,7 @@ class ProductsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

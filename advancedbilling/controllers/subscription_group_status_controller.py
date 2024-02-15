@@ -15,8 +15,6 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.reactivate_subscription_group_response import ReactivateSubscriptionGroupResponse
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
@@ -26,100 +24,6 @@ class SubscriptionGroupStatusController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(SubscriptionGroupStatusController, self).__init__(config)
-
-    def cancel_subscriptions_in_group(self,
-                                      uid,
-                                      body=None):
-        """Does a POST request to /subscription_groups/{uid}/cancel.json.
-
-        This endpoint will immediately cancel all subscriptions within the
-        specified group. The group is identified by it's `uid` passed in the
-        URL. To successfully cancel the group, the primary subscription must
-        be on automatic billing. The group members as well must be on
-        automatic billing or they must be prepaid.
-        In order to cancel a subscription group while also charging for any
-        unbilled usage on metered or prepaid components, the
-        `charge_unbilled_usage=true` parameter must be included in the
-        request.
-
-        Args:
-            uid (str): The uid of the subscription group
-            body (CancelGroupedSubscriptionsRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            void: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}/cancel.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def initiate_delayed_cancellation_for_group(self,
-                                                uid):
-        """Does a POST request to /subscription_groups/{uid}/delayed_cancel.json.
-
-        This endpoint will schedule all subscriptions within the specified
-        group to be canceled at the end of their billing period. The group is
-        identified by it's uid passed in the URL.
-        All subscriptions in the group must be on automatic billing in order
-        to successfully cancel them, and the group must not be in a "past_due"
-        state.
-
-        Args:
-            uid (str): The uid of the subscription group
-
-        Returns:
-            void: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}/delayed_cancel.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
 
     def stop_delayed_cancellation_for_group(self,
                                             uid):
@@ -153,7 +57,7 @@ class SubscriptionGroupStatusController(BaseController):
                             .value(uid)
                             .is_required(True)
                             .should_encode(True))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -236,11 +140,105 @@ class SubscriptionGroupStatusController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ReactivateSubscriptionGroupResponse.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def initiate_delayed_cancellation_for_group(self,
+                                                uid):
+        """Does a POST request to /subscription_groups/{uid}/delayed_cancel.json.
+
+        This endpoint will schedule all subscriptions within the specified
+        group to be canceled at the end of their billing period. The group is
+        identified by it's uid passed in the URL.
+        All subscriptions in the group must be on automatic billing in order
+        to successfully cancel them, and the group must not be in a "past_due"
+        state.
+
+        Args:
+            uid (str): The uid of the subscription group
+
+        Returns:
+            void: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}/delayed_cancel.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def cancel_subscriptions_in_group(self,
+                                      uid,
+                                      body=None):
+        """Does a POST request to /subscription_groups/{uid}/cancel.json.
+
+        This endpoint will immediately cancel all subscriptions within the
+        specified group. The group is identified by it's `uid` passed in the
+        URL. To successfully cancel the group, the primary subscription must
+        be on automatic billing. The group members as well must be on
+        automatic billing or they must be prepaid.
+        In order to cancel a subscription group while also charging for any
+        unbilled usage on metered or prepaid components, the
+        `charge_unbilled_usage=true` parameter must be included in the
+        request.
+
+        Args:
+            uid (str): The uid of the subscription group
+            body (CancelGroupedSubscriptionsRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            void: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}/cancel.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()

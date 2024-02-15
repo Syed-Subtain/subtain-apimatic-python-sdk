@@ -17,16 +17,14 @@ from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.types.array_serialization_format import SerializationFormats
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.subscription_response import SubscriptionResponse
-from advancedbilling.models.prepaid_configuration_response import PrepaidConfigurationResponse
 from advancedbilling.models.subscription_preview_response import SubscriptionPreviewResponse
+from advancedbilling.models.prepaid_configuration_response import PrepaidConfigurationResponse
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 from advancedbilling.exceptions.api_exception import APIException
-from advancedbilling.exceptions.subscription_add_coupon_error_exception import SubscriptionAddCouponErrorException
-from advancedbilling.exceptions.subscription_remove_coupon_errors_exception import SubscriptionRemoveCouponErrorsException
 from advancedbilling.exceptions.nested_error_response_exception import NestedErrorResponseException
+from advancedbilling.exceptions.subscription_remove_coupon_errors_exception import SubscriptionRemoveCouponErrorsException
+from advancedbilling.exceptions.subscription_add_coupon_error_exception import SubscriptionAddCouponErrorException
 
 
 class SubscriptionsController(BaseController):
@@ -843,13 +841,427 @@ class SubscriptionsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def override_subscription(self,
+                              subscription_id,
+                              body=None):
+        """Does a PUT request to /subscriptions/{subscription_id}/override.json.
+
+        This API endpoint allows you to set certain subscription fields that
+        are usually managed for you automatically. Some of the fields can be
+        set via the normal Subscriptions Update API, but others can only be
+        set using this endpoint.
+        This endpoint is provided for cases where you need to “align” Chargify
+        data with data that happened in your system, perhaps before you
+        started using Chargify. For example, you may choose to import your
+        historical subscription data, and would like the activation and
+        cancellation dates in Chargify to match your existing historical
+        dates. Chargify does not backfill historical events (i.e. from the
+        Events API), but some static data can be changed via this API.
+        Why are some fields only settable from this endpoint, and not the
+        normal subscription create and update endpoints? Because we want users
+        of this endpoint to be aware that these fields are usually managed by
+        Chargify, and using this API means **you are stepping out on your
+        own.**
+        Changing these fields will not affect any other attributes. For
+        example, adding an expiration date will not affect the next assessment
+        date on the subscription.
+        If you regularly need to override the current_period_starts_at for new
+        subscriptions, this can also be accomplished by setting both
+        `previous_billing_at` and `next_billing_at` at subscription creation.
+        See the documentation on [Importing
+        Subscriptions](./b3A6MTQxMDgzODg-create-subscription#subscriptions-impo
+        rt) for more information.
+        ## Limitations
+        When passing `current_period_starts_at` some validations are made:
+        1. The subscription needs to be unbilled (no statements or invoices).
+        2. The value passed must be a valid date/time. We recommend using the
+        iso 8601 format.
+        3. The value passed must be before the current date/time.
+        If unpermitted parameters are sent, a 400 HTTP response is sent along
+        with a string giving the reason for the problem.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            body (OverrideSubscriptionRequest, optional): Only these fields
+                are available to be set.
+
+        Returns:
+            void: Response from the API. No Content
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/override.json')
+            .http_method(HttpMethodEnum.PUT)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('400', 'Bad Request', APIException)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', APIException)
+        ).execute()
+
+    def activate_subscription(self,
+                              subscription_id,
+                              body=None):
+        """Does a PUT request to /subscriptions/{subscription_id}/activate.json.
+
+        Chargify offers the ability to activate awaiting signup and trialing
+        subscriptions. This feature is only available on the Relationship
+        Invoicing architecture. Subscriptions in a group may not be activated
+        immediately.
+        For details on how the activation works, and how to activate
+        subscriptions through the application, see [activation](#).
+        The `revert_on_failure` parameter controls the behavior upon
+        activation failure.
+        - If set to `true` and something goes wrong i.e. payment fails, then
+        Chargify will not change the subscription's state. The subscription’s
+        billing period will also remain the same.
+        - If set to `false` and something goes wrong i.e. payment fails, then
+        Chargify will continue through with the activation and enter an end of
+        life state. For trialing subscriptions, that will either be trial
+        ended (if the trial is no obligation), past due (if the trial has an
+        obligation), or canceled (if the site has no dunning strategy, or has
+        a strategy that says to cancel immediately). For awaiting signup
+        subscriptions, that will always be canceled.
+        The default activation failure behavior can be configured per
+        activation attempt, or you may set a default value under Config >
+        Settings > Subscription Activation Settings.
+        ## Activation Scenarios
+        ### Activate Awaiting Signup subscription
+        - Given you have a product without trial
+        - Given you have a site without dunning strategy
+        ```mermaid
+          flowchart LR
+            AS[Awaiting Signup] --> A{Activate}
+            A -->|Success| Active
+            A -->|Failure| ROF{revert_on_failure}
+            ROF -->|true| AS
+            ROF -->|false| Canceled
+        ```
+        - Given you have a product with trial
+        - Given you have a site with dunning strategy
+        ```mermaid
+          flowchart LR
+            AS[Awaiting Signup] --> A{Activate}
+            A -->|Success| Trialing
+            A -->|Failure| ROF{revert_on_failure}
+            ROF -->|true| AS
+            ROF -->|false| PD[Past Due]
+        ```
+        ### Activate Trialing subscription
+        You can read more about the behavior of trialing subscriptions
+        [here](https://maxio-chargify.zendesk.com/hc/en-us/articles/54044946173
+        57#trialing-subscriptions-0-0).
+        When the `revert_on_failure` parameter is set to `true`, the
+        subscription's state will remain as Trialing, we will void the invoice
+        from activation and return any prepayments and credits applied to the
+        invoice back to the subscription.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            body (ActivateSubscriptionRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            SubscriptionResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/activate.json')
+            .http_method(HttpMethodEnum.PUT)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionResponse.from_dictionary)
+            .local_error('400', 'Bad Request', NestedErrorResponseException)
+        ).execute()
+
+    def purge_subscription(self,
+                           subscription_id,
+                           ack,
+                           cascade=None):
+        """Does a POST request to /subscriptions/{subscription_id}/purge.json.
+
+        For sites in test mode, you may purge individual subscriptions.
+        Provide the subscription ID in the url.  To confirm, supply the
+        customer ID in the query string `ack` parameter. You may also delete
+        the customer record and/or payment profiles by passing `cascade`
+        parameters. For example, to delete just the customer record, the query
+        params would be: `?ack={customer_id}&cascade[]=customer`
+        If you need to remove subscriptions from a live site, please contact
+        support to discuss your use case.
+        ### Delete customer and payment profile
+        The query params will be:
+        `?ack={customer_id}&cascade[]=customer&cascade[]=payment_profile`
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            ack (int): id of the customer.
+            cascade (List[SubscriptionPurgeType], optional): Options are
+                "customer" or "payment_profile". Use in query:
+                `cascade[]=customer&cascade[]=payment_profile`.
+
+        Returns:
+            void: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/purge.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .query_param(Parameter()
+                         .key('ack')
+                         .value(ack)
+                         .is_required(True))
+            .query_param(Parameter()
+                         .key('cascade[]')
+                         .value(cascade))
+            .array_serialization_format(SerializationFormats.PLAIN)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('400', 'Bad Request', APIException)
+        ).execute()
+
+    def read_subscription(self,
+                          subscription_id,
+                          include=None):
+        """Does a GET request to /subscriptions/{subscription_id}.json.
+
+        Use this endpoint to find subscription details.
+        ## Self-Service Page token
+        Self-Service Page token for the subscription is not returned by
+        default. If this information is desired, the
+        include[]=self_service_page_token parameter must be provided with the
+        request.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            include (List[SubscriptionInclude], optional): Allows including
+                additional data in the response. Use in query:
+                `include[]=coupons&include[]=self_service_page_token`.
+
+        Returns:
+            SubscriptionResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .query_param(Parameter()
+                         .key('include[]')
+                         .value(include))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .array_serialization_format(SerializationFormats.PLAIN)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionResponse.from_dictionary)
+        ).execute()
+
+    def preview_subscription(self,
+                             body=None):
+        """Does a POST request to /subscriptions/preview.json.
+
+        The Chargify API allows you to preview a subscription by POSTing the
+        same JSON or XML as for a subscription creation.
+        The "Next Billing" amount and "Next Billing" date are represented in
+        each Subscriber's Summary. For more information, please see our
+        documentation
+        [here](https://chargify.zendesk.com/hc/en-us/articles/4407884887835#nex
+        t-billing).
+        ## Side effects
+        A subscription will not be created by sending a POST to this endpoint.
+        It is meant to serve as a prediction.
+        ## Taxable Subscriptions
+        This endpoint will preview taxes applicable to a purchase. In order
+        for taxes to be previewed, the following conditions must be met:
+        + Taxes must be configured on the subscription
+        + The preview must be for the purchase of a taxable product or
+        component, or combination of the two.
+        + The subscription payload must contain a full billing or shipping
+        address in order to calculate tax
+        For more information about creating taxable previews, please see our
+        documentation guide on how to create [taxable
+        subscriptions.](https://chargify.zendesk.com/hc/en-us/articles/44079042
+        17755#creating-taxable-subscriptions)
+        You do **not** need to include a card number to generate tax
+        information when you are previewing a subscription. However, please
+        note that when you actually want to create the subscription, you must
+        include the credit card information if you want the billing address to
+        be stored in Chargify. The billing address and the credit card
+        information are stored together within the payment profile object.
+        Also, you may not send a billing address to Chargify without payment
+        profile information, as the address is stored on the card.
+        You can pass shipping and billing addresses and still decide not to
+        calculate taxes. To do that, pass `skip_billing_manifest_taxes: true`
+        attribute.
+        ## Non-taxable Subscriptions
+        If you'd like to calculate subscriptions that do not include tax,
+        please feel free to leave off the billing information.
+
+        Args:
+            body (CreateSubscriptionRequest, optional): TODO: type description
+                here.
+
+        Returns:
+            SubscriptionPreviewResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/preview.json')
+            .http_method(HttpMethodEnum.POST)
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionPreviewResponse.from_dictionary)
+        ).execute()
+
+    def delete_coupon_from_subscription(self,
+                                        subscription_id,
+                                        coupon_code=None):
+        """Does a DELETE request to /subscriptions/{subscription_id}/remove_coupon.json.
+
+        Use this endpoint to remove a coupon from an existing subscription.
+        For more information on the expected behaviour of removing a coupon
+        from a subscription, please see our documentation
+        [here.](https://chargify.zendesk.com/hc/en-us/articles/4407896488987#re
+        moving-a-coupon)
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            coupon_code (str, optional): The coupon code
+
+        Returns:
+            str: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/remove_coupon.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .query_param(Parameter()
+                         .key('coupon_code')
+                         .value(coupon_code))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionRemoveCouponErrorsException)
         ).execute()
 
     def list_subscriptions(self,
@@ -1002,7 +1414,7 @@ class SubscriptionsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .array_serialization_format(SerializationFormats.CSV)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -1115,144 +1527,13 @@ class SubscriptionsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def read_subscription(self,
-                          subscription_id,
-                          include=None):
-        """Does a GET request to /subscriptions/{subscription_id}.json.
-
-        Use this endpoint to find subscription details.
-        ## Self-Service Page token
-        Self-Service Page token for the subscription is not returned by
-        default. If this information is desired, the
-        include[]=self_service_page_token parameter must be provided with the
-        request.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            include (List[SubscriptionInclude], optional): Allows including
-                additional data in the response. Use in query:
-                `include[]=coupons&include[]=self_service_page_token`.
-
-        Returns:
-            SubscriptionResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .query_param(Parameter()
-                         .key('include[]')
-                         .value(include))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .array_serialization_format(SerializationFormats.CSV)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionResponse.from_dictionary)
-        ).execute()
-
-    def override_subscription(self,
-                              subscription_id,
-                              body=None):
-        """Does a PUT request to /subscriptions/{subscription_id}/override.json.
-
-        This API endpoint allows you to set certain subscription fields that
-        are usually managed for you automatically. Some of the fields can be
-        set via the normal Subscriptions Update API, but others can only be
-        set using this endpoint.
-        This endpoint is provided for cases where you need to “align” Chargify
-        data with data that happened in your system, perhaps before you
-        started using Chargify. For example, you may choose to import your
-        historical subscription data, and would like the activation and
-        cancellation dates in Chargify to match your existing historical
-        dates. Chargify does not backfill historical events (i.e. from the
-        Events API), but some static data can be changed via this API.
-        Why are some fields only settable from this endpoint, and not the
-        normal subscription create and update endpoints? Because we want users
-        of this endpoint to be aware that these fields are usually managed by
-        Chargify, and using this API means **you are stepping out on your
-        own.**
-        Changing these fields will not affect any other attributes. For
-        example, adding an expiration date will not affect the next assessment
-        date on the subscription.
-        If you regularly need to override the current_period_starts_at for new
-        subscriptions, this can also be accomplished by setting both
-        `previous_billing_at` and `next_billing_at` at subscription creation.
-        See the documentation on [Importing
-        Subscriptions](./b3A6MTQxMDgzODg-create-subscription#subscriptions-impo
-        rt) for more information.
-        ## Limitations
-        When passing `current_period_starts_at` some validations are made:
-        1. The subscription needs to be unbilled (no statements or invoices).
-        2. The value passed must be a valid date/time. We recommend using the
-        iso 8601 format.
-        3. The value passed must be before the current date/time.
-        If unpermitted parameters are sent, a 400 HTTP response is sent along
-        with a string giving the reason for the problem.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            body (OverrideSubscriptionRequest, optional): Only these fields
-                are available to be set.
-
-        Returns:
-            void: Response from the API. No Content
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/override.json')
-            .http_method(HttpMethodEnum.PUT)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('400', 'Bad Request', APIException)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', APIException)
         ).execute()
 
     def read_subscription_by_reference(self,
@@ -1285,72 +1566,12 @@ class SubscriptionsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionResponse.from_dictionary)
-        ).execute()
-
-    def purge_subscription(self,
-                           subscription_id,
-                           ack,
-                           cascade=None):
-        """Does a POST request to /subscriptions/{subscription_id}/purge.json.
-
-        For sites in test mode, you may purge individual subscriptions.
-        Provide the subscription ID in the url.  To confirm, supply the
-        customer ID in the query string `ack` parameter. You may also delete
-        the customer record and/or payment profiles by passing `cascade`
-        parameters. For example, to delete just the customer record, the query
-        params would be: `?ack={customer_id}&cascade[]=customer`
-        If you need to remove subscriptions from a live site, please contact
-        support to discuss your use case.
-        ### Delete customer and payment profile
-        The query params will be:
-        `?ack={customer_id}&cascade[]=customer&cascade[]=payment_profile`
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            ack (int): id of the customer.
-            cascade (List[SubscriptionPurgeType], optional): Options are
-                "customer" or "payment_profile". Use in query:
-                `cascade[]=customer&cascade[]=payment_profile`.
-
-        Returns:
-            void: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/purge.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .query_param(Parameter()
-                         .key('ack')
-                         .value(ack)
-                         .is_required(True))
-            .query_param(Parameter()
-                         .key('cascade[]')
-                         .value(cascade))
-            .array_serialization_format(SerializationFormats.CSV)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('400', 'Bad Request', APIException)
         ).execute()
 
     def create_prepaid_subscription(self,
@@ -1394,89 +1615,12 @@ class SubscriptionsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(PrepaidConfigurationResponse.from_dictionary)
-        ).execute()
-
-    def preview_subscription(self,
-                             body=None):
-        """Does a POST request to /subscriptions/preview.json.
-
-        The Chargify API allows you to preview a subscription by POSTing the
-        same JSON or XML as for a subscription creation.
-        The "Next Billing" amount and "Next Billing" date are represented in
-        each Subscriber's Summary. For more information, please see our
-        documentation
-        [here](https://chargify.zendesk.com/hc/en-us/articles/4407884887835#nex
-        t-billing).
-        ## Side effects
-        A subscription will not be created by sending a POST to this endpoint.
-        It is meant to serve as a prediction.
-        ## Taxable Subscriptions
-        This endpoint will preview taxes applicable to a purchase. In order
-        for taxes to be previewed, the following conditions must be met:
-        + Taxes must be configured on the subscription
-        + The preview must be for the purchase of a taxable product or
-        component, or combination of the two.
-        + The subscription payload must contain a full billing or shipping
-        address in order to calculate tax
-        For more information about creating taxable previews, please see our
-        documentation guide on how to create [taxable
-        subscriptions.](https://chargify.zendesk.com/hc/en-us/articles/44079042
-        17755#creating-taxable-subscriptions)
-        You do **not** need to include a card number to generate tax
-        information when you are previewing a subscription. However, please
-        note that when you actually want to create the subscription, you must
-        include the credit card information if you want the billing address to
-        be stored in Chargify. The billing address and the credit card
-        information are stored together within the payment profile object.
-        Also, you may not send a billing address to Chargify without payment
-        profile information, as the address is stored on the card.
-        You can pass shipping and billing addresses and still decide not to
-        calculate taxes. To do that, pass `skip_billing_manifest_taxes: true`
-        attribute.
-        ## Non-taxable Subscriptions
-        If you'd like to calculate subscriptions that do not include tax,
-        please feel free to leave off the billing information.
-
-        Args:
-            body (CreateSubscriptionRequest, optional): TODO: type description
-                here.
-
-        Returns:
-            SubscriptionPreviewResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/preview.json')
-            .http_method(HttpMethodEnum.POST)
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionPreviewResponse.from_dictionary)
         ).execute()
 
     def apply_coupon_to_subscription(self,
@@ -1538,157 +1682,11 @@ class SubscriptionsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionAddCouponErrorException)
-        ).execute()
-
-    def delete_coupon_from_subscription(self,
-                                        subscription_id,
-                                        coupon_code=None):
-        """Does a DELETE request to /subscriptions/{subscription_id}/remove_coupon.json.
-
-        Use this endpoint to remove a coupon from an existing subscription.
-        For more information on the expected behaviour of removing a coupon
-        from a subscription, please see our documentation
-        [here.](https://chargify.zendesk.com/hc/en-us/articles/4407896488987#re
-        moving-a-coupon)
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            coupon_code (str, optional): The coupon code
-
-        Returns:
-            str: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/remove_coupon.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .query_param(Parameter()
-                         .key('coupon_code')
-                         .value(coupon_code))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionRemoveCouponErrorsException)
-        ).execute()
-
-    def activate_subscription(self,
-                              subscription_id,
-                              body=None):
-        """Does a PUT request to /subscriptions/{subscription_id}/activate.json.
-
-        Chargify offers the ability to activate awaiting signup and trialing
-        subscriptions. This feature is only available on the Relationship
-        Invoicing architecture. Subscriptions in a group may not be activated
-        immediately.
-        For details on how the activation works, and how to activate
-        subscriptions through the application, see [activation](#).
-        The `revert_on_failure` parameter controls the behavior upon
-        activation failure.
-        - If set to `true` and something goes wrong i.e. payment fails, then
-        Chargify will not change the subscription's state. The subscription’s
-        billing period will also remain the same.
-        - If set to `false` and something goes wrong i.e. payment fails, then
-        Chargify will continue through with the activation and enter an end of
-        life state. For trialing subscriptions, that will either be trial
-        ended (if the trial is no obligation), past due (if the trial has an
-        obligation), or canceled (if the site has no dunning strategy, or has
-        a strategy that says to cancel immediately). For awaiting signup
-        subscriptions, that will always be canceled.
-        The default activation failure behavior can be configured per
-        activation attempt, or you may set a default value under Config >
-        Settings > Subscription Activation Settings.
-        ## Activation Scenarios
-        ### Activate Awaiting Signup subscription
-        - Given you have a product without trial
-        - Given you have a site without dunning strategy
-        ```mermaid
-          flowchart LR
-            AS[Awaiting Signup] --> A{Activate}
-            A -->|Success| Active
-            A -->|Failure| ROF{revert_on_failure}
-            ROF -->|true| AS
-            ROF -->|false| Canceled
-        ```
-        - Given you have a product with trial
-        - Given you have a site with dunning strategy
-        ```mermaid
-          flowchart LR
-            AS[Awaiting Signup] --> A{Activate}
-            A -->|Success| Trialing
-            A -->|Failure| ROF{revert_on_failure}
-            ROF -->|true| AS
-            ROF -->|false| PD[Past Due]
-        ```
-        ### Activate Trialing subscription
-        You can read more about the behavior of trialing subscriptions
-        [here](https://maxio-chargify.zendesk.com/hc/en-us/articles/54044946173
-        57#trialing-subscriptions-0-0).
-        When the `revert_on_failure` parameter is set to `true`, the
-        subscription's state will remain as Trialing, we will void the invoice
-        from activation and return any prepayments and credits applied to the
-        invoice back to the subscription.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            body (ActivateSubscriptionRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            SubscriptionResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/activate.json')
-            .http_method(HttpMethodEnum.PUT)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionResponse.from_dictionary)
-            .local_error('400', 'Bad Request', NestedErrorResponseException)
         ).execute()

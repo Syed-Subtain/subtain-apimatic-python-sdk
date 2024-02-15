@@ -47,7 +47,7 @@ class CreateEBBComponent(object):
             object: An instance of this structure class.
 
         """
-        from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -69,6 +69,7 @@ class CreateEBBComponent(object):
             boolean : if dictionary is valid contains required properties.
 
         """
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.event_based_component, type_callable=lambda value: EBBComponent.validate(value))
 

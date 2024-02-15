@@ -83,6 +83,7 @@ class Event(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -117,6 +118,7 @@ class Event(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.id, type_callable=lambda value: isinstance(value, float)) \
                 and APIHelper.is_valid_type(value=dictionary.key, type_callable=lambda value: isinstance(value, str)) \
@@ -124,7 +126,7 @@ class Event(object):
                 and APIHelper.is_valid_type(value=dictionary.subscription_id, type_callable=lambda value: isinstance(value, float)) \
                 and APIHelper.is_valid_type(value=dictionary.customer_id, type_callable=lambda value: isinstance(value, float)) \
                 and APIHelper.is_valid_type(value=dictionary.created_at, type_callable=lambda value: isinstance(value, str)) \
-                and UnionTypeLookUp.get('EventEventSpecificData').validate(dictionary.event_specific_data)
+                and UnionTypeLookUp.get('EventEventSpecificData').validate(dictionary.event_specific_data).is_valid
 
         if not isinstance(dictionary, dict):
             return False
@@ -135,4 +137,4 @@ class Event(object):
             and APIHelper.is_valid_type(value=dictionary.get('subscription_id'), type_callable=lambda value: isinstance(value, float)) \
             and APIHelper.is_valid_type(value=dictionary.get('customer_id'), type_callable=lambda value: isinstance(value, float)) \
             and APIHelper.is_valid_type(value=dictionary.get('created_at'), type_callable=lambda value: isinstance(value, str)) \
-            and UnionTypeLookUp.get('EventEventSpecificData').validate(dictionary.get('event_specific_data'))
+            and UnionTypeLookUp.get('EventEventSpecificData').validate(dictionary.get('event_specific_data')).is_valid

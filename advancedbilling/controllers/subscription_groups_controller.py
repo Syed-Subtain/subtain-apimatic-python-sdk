@@ -15,18 +15,16 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
-from advancedbilling.models.subscription_group_signup_response import SubscriptionGroupSignupResponse
 from advancedbilling.models.subscription_group_response import SubscriptionGroupResponse
-from advancedbilling.models.list_subscription_groups_response import ListSubscriptionGroupsResponse
 from advancedbilling.models.full_subscription_group_response import FullSubscriptionGroupResponse
 from advancedbilling.models.delete_subscription_group_response import DeleteSubscriptionGroupResponse
-from advancedbilling.exceptions.subscription_group_signup_error_response_exception import SubscriptionGroupSignupErrorResponseException
+from advancedbilling.models.subscription_group_signup_response import SubscriptionGroupSignupResponse
+from advancedbilling.models.list_subscription_groups_response import ListSubscriptionGroupsResponse
 from advancedbilling.exceptions.single_string_error_response_exception import SingleStringErrorResponseException
-from advancedbilling.exceptions.subscription_group_update_error_response_exception import SubscriptionGroupUpdateErrorResponseException
 from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
+from advancedbilling.exceptions.subscription_group_signup_error_response_exception import SubscriptionGroupSignupErrorResponseException
+from advancedbilling.exceptions.subscription_group_update_error_response_exception import SubscriptionGroupUpdateErrorResponseException
 
 
 class SubscriptionGroupsController(BaseController):
@@ -34,61 +32,6 @@ class SubscriptionGroupsController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(SubscriptionGroupsController, self).__init__(config)
-
-    def signup_with_subscription_group(self,
-                                       body=None):
-        """Does a POST request to /subscription_groups/signup.json.
-
-        Create multiple subscriptions at once under the same customer and
-        consolidate them into a subscription group.
-        You must provide one and only one of the
-        `payer_id`/`payer_reference`/`payer_attributes` for the customer
-        attached to the group.
-        You must provide one and only one of the
-        `payment_profile_id`/`credit_card_attributes`/`bank_account_attributes`
-        for the payment profile attached to the group.
-        Only one of the `subscriptions` can have `"primary": true` attribute
-        set.
-        When passing product to a subscription you can use either `product_id`
-        or `product_handle` or `offer_id`. You can also use `custom_price`
-        instead.
-
-        Args:
-            body (SubscriptionGroupSignupRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            SubscriptionGroupSignupResponse: Response from the API. Created
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/signup.json')
-            .http_method(HttpMethodEnum.POST)
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionGroupSignupResponse.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionGroupSignupErrorResponseException)
-        ).execute()
 
     def create_subscription_group(self,
                                   body=None):
@@ -124,87 +67,13 @@ class SubscriptionGroupsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(SubscriptionGroupResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', SingleStringErrorResponseException)
-        ).execute()
-
-    def list_subscription_groups(self,
-                                 options=dict()):
-        """Does a GET request to /subscription_groups.json.
-
-        Returns an array of subscription groups for the site. The response is
-        paginated and will return a `meta` key with pagination information.
-        #### Account Balance Information
-        Account balance information for the subscription groups is not
-        returned by default. If this information is desired, the
-        `include[]=account_balances` parameter must be provided with the
-        request.
-
-        Args:
-            options (dict, optional): Key-value pairs for any of the
-                parameters to this API Endpoint. All parameters to the
-                endpoint are supplied through the dictionary with their names
-                being the key and their desired values being the value. A list
-                of parameters that can be used are::
-
-                    page -- int -- Result records are organized in pages. By
-                        default, the first page of results is displayed. The
-                        page parameter specifies a page number of results to
-                        fetch. You can start navigating through the pages to
-                        consume the results. You do this by passing in a page
-                        parameter. Retrieve the next page by adding ?page=2 to
-                        the query string. If there are no results to return,
-                        then an empty result set will be returned. Use in
-                        query `page=1`.
-                    per_page -- int -- This parameter indicates how many
-                        records to fetch in each request. Default value is 20.
-                        The maximum allowed values is 200; any per_page value
-                        over 200 will be changed to 200. Use in query
-                        `per_page=200`.
-                    include -- str -- A list of additional information to
-                        include in the response. The following values are
-                        supported:  - `account_balances`: Account balance
-                        information for the subscription groups. Use in query:
-                        `include[]=account_balances`
-
-        Returns:
-            ListSubscriptionGroupsResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups.json')
-            .http_method(HttpMethodEnum.GET)
-            .query_param(Parameter()
-                         .key('page')
-                         .value(options.get('page', None)))
-            .query_param(Parameter()
-                         .key('per_page')
-                         .value(options.get('per_page', None)))
-            .query_param(Parameter()
-                         .key('include')
-                         .value(options.get('include', None)))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ListSubscriptionGroupsResponse.from_dictionary)
         ).execute()
 
     def read_subscription_group(self,
@@ -244,7 +113,7 @@ class SubscriptionGroupsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -252,24 +121,22 @@ class SubscriptionGroupsController(BaseController):
             .deserialize_into(FullSubscriptionGroupResponse.from_dictionary)
         ).execute()
 
-    def update_subscription_group_members(self,
-                                          uid,
-                                          body=None):
-        """Does a PUT request to /subscription_groups/{uid}.json.
+    def remove_subscription_from_group(self,
+                                       subscription_id):
+        """Does a DELETE request to /subscriptions/{subscription_id}/group.json.
 
-        Use this endpoint to update subscription group members.
-        `"member_ids": []` should contain an array of both subscription IDs to
-        set as group members and subscription IDs already present in the
-        groups. Not including them will result in removing them from
-        subscription group. To clean up members, just leave the array empty.
+        For sites making use of the [Relationship
+        Billing](https://chargify.zendesk.com/hc/en-us/articles/4407737494171)
+        and [Customer
+        Hierarchy](https://chargify.zendesk.com/hc/en-us/articles/4407746683291
+        ) features, it is possible to remove existing subscription from
+        subscription group.
 
         Args:
-            uid (str): The uid of the subscription group
-            body (UpdateSubscriptionGroupRequest, optional): TODO: type
-                description here.
+            subscription_id (str): The Chargify id of the subscription
 
         Returns:
-            SubscriptionGroupResponse: Response from the API. OK
+            void: Response from the API. No Content
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -281,29 +148,19 @@ class SubscriptionGroupsController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}.json')
-            .http_method(HttpMethodEnum.PUT)
+            .path('/subscriptions/{subscription_id}/group.json')
+            .http_method(HttpMethodEnum.DELETE)
             .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
+                            .key('subscription_id')
+                            .value(subscription_id)
                             .is_required(True)
                             .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SubscriptionGroupResponse.from_dictionary)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionGroupUpdateErrorResponseException)
+            .local_error('404', 'Not Found', APIException)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
         ).execute()
 
     def delete_subscription_group(self,
@@ -339,7 +196,7 @@ class SubscriptionGroupsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -382,7 +239,7 @@ class SubscriptionGroupsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -461,7 +318,7 @@ class SubscriptionGroupsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -469,22 +326,30 @@ class SubscriptionGroupsController(BaseController):
             .deserialize_into(SubscriptionGroupResponse.from_dictionary)
         ).execute()
 
-    def remove_subscription_from_group(self,
-                                       subscription_id):
-        """Does a DELETE request to /subscriptions/{subscription_id}/group.json.
+    def signup_with_subscription_group(self,
+                                       body=None):
+        """Does a POST request to /subscription_groups/signup.json.
 
-        For sites making use of the [Relationship
-        Billing](https://chargify.zendesk.com/hc/en-us/articles/4407737494171)
-        and [Customer
-        Hierarchy](https://chargify.zendesk.com/hc/en-us/articles/4407746683291
-        ) features, it is possible to remove existing subscription from
-        subscription group.
+        Create multiple subscriptions at once under the same customer and
+        consolidate them into a subscription group.
+        You must provide one and only one of the
+        `payer_id`/`payer_reference`/`payer_attributes` for the customer
+        attached to the group.
+        You must provide one and only one of the
+        `payment_profile_id`/`credit_card_attributes`/`bank_account_attributes`
+        for the payment profile attached to the group.
+        Only one of the `subscriptions` can have `"primary": true` attribute
+        set.
+        When passing product to a subscription you can use either `product_id`
+        or `product_handle` or `offer_id`. You can also use `custom_price`
+        instead.
 
         Args:
-            subscription_id (str): The Chargify id of the subscription
+            body (SubscriptionGroupSignupRequest, optional): TODO: type
+                description here.
 
         Returns:
-            void: Response from the API. No Content
+            SubscriptionGroupSignupResponse: Response from the API. Created
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -496,17 +361,150 @@ class SubscriptionGroupsController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/group.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
+            .path('/subscription_groups/signup.json')
+            .http_method(HttpMethodEnum.POST)
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
-            .local_error('404', 'Not Found', APIException)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionGroupSignupResponse.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionGroupSignupErrorResponseException)
+        ).execute()
+
+    def list_subscription_groups(self,
+                                 options=dict()):
+        """Does a GET request to /subscription_groups.json.
+
+        Returns an array of subscription groups for the site. The response is
+        paginated and will return a `meta` key with pagination information.
+        #### Account Balance Information
+        Account balance information for the subscription groups is not
+        returned by default. If this information is desired, the
+        `include[]=account_balances` parameter must be provided with the
+        request.
+
+        Args:
+            options (dict, optional): Key-value pairs for any of the
+                parameters to this API Endpoint. All parameters to the
+                endpoint are supplied through the dictionary with their names
+                being the key and their desired values being the value. A list
+                of parameters that can be used are::
+
+                    page -- int -- Result records are organized in pages. By
+                        default, the first page of results is displayed. The
+                        page parameter specifies a page number of results to
+                        fetch. You can start navigating through the pages to
+                        consume the results. You do this by passing in a page
+                        parameter. Retrieve the next page by adding ?page=2 to
+                        the query string. If there are no results to return,
+                        then an empty result set will be returned. Use in
+                        query `page=1`.
+                    per_page -- int -- This parameter indicates how many
+                        records to fetch in each request. Default value is 20.
+                        The maximum allowed values is 200; any per_page value
+                        over 200 will be changed to 200. Use in query
+                        `per_page=200`.
+                    include -- str -- A list of additional information to
+                        include in the response. The following values are
+                        supported:  - `account_balances`: Account balance
+                        information for the subscription groups. Use in query:
+                        `include[]=account_balances`
+
+        Returns:
+            ListSubscriptionGroupsResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups.json')
+            .http_method(HttpMethodEnum.GET)
+            .query_param(Parameter()
+                         .key('page')
+                         .value(options.get('page', None)))
+            .query_param(Parameter()
+                         .key('per_page')
+                         .value(options.get('per_page', None)))
+            .query_param(Parameter()
+                         .key('include')
+                         .value(options.get('include', None)))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ListSubscriptionGroupsResponse.from_dictionary)
+        ).execute()
+
+    def update_subscription_group_members(self,
+                                          uid,
+                                          body=None):
+        """Does a PUT request to /subscription_groups/{uid}.json.
+
+        Use this endpoint to update subscription group members.
+        `"member_ids": []` should contain an array of both subscription IDs to
+        set as group members and subscription IDs already present in the
+        groups. Not including them will result in removing them from
+        subscription group. To clean up members, just leave the array empty.
+
+        Args:
+            uid (str): The uid of the subscription group
+            body (UpdateSubscriptionGroupRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            SubscriptionGroupResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}.json')
+            .http_method(HttpMethodEnum.PUT)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(SubscriptionGroupResponse.from_dictionary)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', SubscriptionGroupUpdateErrorResponseException)
         ).execute()

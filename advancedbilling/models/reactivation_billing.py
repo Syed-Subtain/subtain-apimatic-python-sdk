@@ -56,6 +56,7 @@ class ReactivationBilling(object):
             object: An instance of this structure class.
 
         """
+
         if dictionary is None:
             return None
 
@@ -63,3 +64,25 @@ class ReactivationBilling(object):
         reactivation_charge = dictionary.get("reactivation_charge") if dictionary.get("reactivation_charge") else 'prorated'
         # Return an object of this model
         return cls(reactivation_charge)
+
+    @classmethod
+    def validate(cls, dictionary):
+        """Validates dictionary against class required properties
+
+        Args:
+            dictionary (dictionary): A dictionary representation of the object
+            as obtained from the deserialization of the server's response. The
+            keys MUST match property names in the API description.
+
+        Returns:
+            boolean : if dictionary is valid contains required properties.
+
+        """
+
+        if isinstance(dictionary, cls):
+            return True
+
+        if not isinstance(dictionary, dict):
+            return False
+
+        return True

@@ -65,6 +65,7 @@ class Price(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -94,12 +95,13 @@ class Price(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if isinstance(dictionary, cls):
-            return UnionTypeLookUp.get('PriceStartingQuantity').validate(dictionary.starting_quantity) \
-                and UnionTypeLookUp.get('PriceUnitPrice').validate(dictionary.unit_price)
+            return UnionTypeLookUp.get('PriceStartingQuantity').validate(dictionary.starting_quantity).is_valid \
+                and UnionTypeLookUp.get('PriceUnitPrice').validate(dictionary.unit_price).is_valid
 
         if not isinstance(dictionary, dict):
             return False
 
-        return UnionTypeLookUp.get('PriceStartingQuantity').validate(dictionary.get('starting_quantity')) \
-            and UnionTypeLookUp.get('PriceUnitPrice').validate(dictionary.get('unit_price'))
+        return UnionTypeLookUp.get('PriceStartingQuantity').validate(dictionary.get('starting_quantity')).is_valid \
+            and UnionTypeLookUp.get('PriceUnitPrice').validate(dictionary.get('unit_price')).is_valid

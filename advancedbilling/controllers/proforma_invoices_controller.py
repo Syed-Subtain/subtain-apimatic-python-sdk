@@ -15,15 +15,13 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
+from advancedbilling.models.signup_proforma_preview_response import SignupProformaPreviewResponse
 from advancedbilling.models.proforma_invoice import ProformaInvoice
 from advancedbilling.models.proforma_invoice_preview import ProformaInvoicePreview
-from advancedbilling.models.signup_proforma_preview_response import SignupProformaPreviewResponse
-from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
-from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.proforma_bad_request_error_response_exception import ProformaBadRequestErrorResponseException
+from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.error_map_response_exception import ErrorMapResponseException
+from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
 
 
 class ProformaInvoicesController(BaseController):
@@ -32,28 +30,33 @@ class ProformaInvoicesController(BaseController):
     def __init__(self, config):
         super(ProformaInvoicesController, self).__init__(config)
 
-    def create_consolidated_proforma_invoice(self,
-                                             uid):
-        """Does a POST request to /subscription_groups/{uid}/proforma_invoices.json.
+    def preview_signup_proforma_invoice(self,
+                                        include_next_proforma_invoice=None,
+                                        body=None):
+        """Does a POST request to /subscriptions/proforma_invoices/preview.json.
 
-        This endpoint will trigger the creation of a consolidated proforma
-        invoice asynchronously. It will return a 201 with no message, or a 422
-        with any errors. To find and view the new consolidated proforma
-        invoice, you may poll the subscription group listing for proforma
-        invoices; only one consolidated proforma invoice may be created per
-        group at a time.
-        If the information becomes outdated, simply void the old consolidated
-        proforma invoice and generate a new one.
-        ## Restrictions
-        Proforma invoices are only available on Relationship Invoicing sites.
-        To create a proforma invoice, the subscription must not be prepaid,
-        and must be in a live state.
+        This endpoint is only available for Relationship Invoicing sites. It
+        cannot be used to create consolidated proforma invoice previews or
+        preview prepaid subscriptions.
+        Create a signup preview in the format of a proforma invoice to preview
+        costs before a subscription's signup. You have the option of
+        optionally previewing the first renewal's costs as well. The proforma
+        invoice preview will not be persisted.
+        Pass a payload that resembles a subscription create or signup preview
+        request. For example, you can specify components, coupons/a referral,
+        offers, custom pricing, and an existing customer or payment profile to
+        populate a shipping or billing address.
+        A product and customer first name, last name, and email are the
+        minimum requirements.
 
         Args:
-            uid (str): The uid of the subscription group
+            include_next_proforma_invoice (str, optional): Choose to include a
+                proforma invoice preview for the first renewal
+            body (CreateSubscriptionRequest, optional): TODO: type description
+                here.
 
         Returns:
-            void: Response from the API. Created
+            SignupProformaPreviewResponse: Response from the API. Created
 
         Raises:
             APIException: When an error occurs while fetching the data from
@@ -65,111 +68,29 @@ class ProformaInvoicesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}/proforma_invoices.json')
+            .path('/subscriptions/proforma_invoices/preview.json')
             .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
-                            .is_required(True)
-                            .should_encode(True))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
-        ).execute()
-
-    def list_subscription_group_proforma_invoices(self,
-                                                  uid):
-        """Does a GET request to /subscription_groups/{uid}/proforma_invoices.json.
-
-        Only proforma invoices with a `consolidation_level` of parent are
-        returned.
-        By default, proforma invoices returned on the index will only include
-        totals, not detailed breakdowns for `line_items`, `discounts`,
-        `taxes`, `credits`, `payments`, `custom_fields`. To include
-        breakdowns, pass the specific field as a key in the query with a value
-        set to true.
-
-        Args:
-            uid (str): The uid of the subscription group
-
-        Returns:
-            ProformaInvoice: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscription_groups/{uid}/proforma_invoices.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('uid')
-                            .value(uid)
-                            .is_required(True)
-                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .query_param(Parameter()
+                         .key('include=next_proforma_invoice')
+                         .value(include_next_proforma_invoice))
+            .body_param(Parameter()
+                        .value(body))
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProformaInvoice.from_dictionary)
+            .deserialize_into(SignupProformaPreviewResponse.from_dictionary)
+            .local_error('400', 'Bad Request', ProformaBadRequestErrorResponseException)
             .local_error('403', 'Forbidden', APIException)
-            .local_error('404', 'Not Found', APIException)
-        ).execute()
-
-    def read_proforma_invoice(self,
-                              proforma_invoice_uid):
-        """Does a GET request to /proforma_invoices/{proforma_invoice_uid}.json.
-
-        Use this endpoint to read the details of an existing proforma
-        invoice.
-        ## Restrictions
-        Proforma invoices are only available on Relationship Invoicing sites.
-
-        Args:
-            proforma_invoice_uid (int): The uid of the proforma invoice
-
-        Returns:
-            ProformaInvoice: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/proforma_invoices/{proforma_invoice_uid}.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('proforma_invoice_uid')
-                            .value(proforma_invoice_uid)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProformaInvoice.from_dictionary)
-            .local_error('403', 'Forbidden', APIException)
-            .local_error('404', 'Not Found', APIException)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorMapResponseException)
         ).execute()
 
     def create_proforma_invoice(self,
@@ -213,7 +134,7 @@ class ProformaInvoicesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -330,7 +251,7 @@ class ProformaInvoicesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -388,7 +309,7 @@ class ProformaInvoicesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -397,6 +318,146 @@ class ProformaInvoicesController(BaseController):
             .local_error('403', 'Forbidden', APIException)
             .local_error('404', 'Not Found', APIException)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def create_consolidated_proforma_invoice(self,
+                                             uid):
+        """Does a POST request to /subscription_groups/{uid}/proforma_invoices.json.
+
+        This endpoint will trigger the creation of a consolidated proforma
+        invoice asynchronously. It will return a 201 with no message, or a 422
+        with any errors. To find and view the new consolidated proforma
+        invoice, you may poll the subscription group listing for proforma
+        invoices; only one consolidated proforma invoice may be created per
+        group at a time.
+        If the information becomes outdated, simply void the old consolidated
+        proforma invoice and generate a new one.
+        ## Restrictions
+        Proforma invoices are only available on Relationship Invoicing sites.
+        To create a proforma invoice, the subscription must not be prepaid,
+        and must be in a live state.
+
+        Args:
+            uid (str): The uid of the subscription group
+
+        Returns:
+            void: Response from the API. Created
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}/proforma_invoices.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def list_subscription_group_proforma_invoices(self,
+                                                  uid):
+        """Does a GET request to /subscription_groups/{uid}/proforma_invoices.json.
+
+        Only proforma invoices with a `consolidation_level` of parent are
+        returned.
+        By default, proforma invoices returned on the index will only include
+        totals, not detailed breakdowns for `line_items`, `discounts`,
+        `taxes`, `credits`, `payments`, `custom_fields`. To include
+        breakdowns, pass the specific field as a key in the query with a value
+        set to true.
+
+        Args:
+            uid (str): The uid of the subscription group
+
+        Returns:
+            ProformaInvoice: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscription_groups/{uid}/proforma_invoices.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('uid')
+                            .value(uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProformaInvoice.from_dictionary)
+            .local_error('403', 'Forbidden', APIException)
+            .local_error('404', 'Not Found', APIException)
+        ).execute()
+
+    def read_proforma_invoice(self,
+                              proforma_invoice_uid):
+        """Does a GET request to /proforma_invoices/{proforma_invoice_uid}.json.
+
+        Use this endpoint to read the details of an existing proforma
+        invoice.
+        ## Restrictions
+        Proforma invoices are only available on Relationship Invoicing sites.
+
+        Args:
+            proforma_invoice_uid (int): The uid of the proforma invoice
+
+        Returns:
+            ProformaInvoice: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/proforma_invoices/{proforma_invoice_uid}.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('proforma_invoice_uid')
+                            .value(proforma_invoice_uid)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProformaInvoice.from_dictionary)
+            .local_error('403', 'Forbidden', APIException)
+            .local_error('404', 'Not Found', APIException)
         ).execute()
 
     def preview_proforma_invoice(self,
@@ -447,7 +508,7 @@ class ProformaInvoicesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -505,75 +566,12 @@ class ProformaInvoicesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ProformaInvoice.from_dictionary)
-            .local_error('400', 'Bad Request', ProformaBadRequestErrorResponseException)
-            .local_error('403', 'Forbidden', APIException)
-            .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorMapResponseException)
-        ).execute()
-
-    def preview_signup_proforma_invoice(self,
-                                        include_next_proforma_invoice=None,
-                                        body=None):
-        """Does a POST request to /subscriptions/proforma_invoices/preview.json.
-
-        This endpoint is only available for Relationship Invoicing sites. It
-        cannot be used to create consolidated proforma invoice previews or
-        preview prepaid subscriptions.
-        Create a signup preview in the format of a proforma invoice to preview
-        costs before a subscription's signup. You have the option of
-        optionally previewing the first renewal's costs as well. The proforma
-        invoice preview will not be persisted.
-        Pass a payload that resembles a subscription create or signup preview
-        request. For example, you can specify components, coupons/a referral,
-        offers, custom pricing, and an existing customer or payment profile to
-        populate a shipping or billing address.
-        A product and customer first name, last name, and email are the
-        minimum requirements.
-
-        Args:
-            include_next_proforma_invoice (str, optional): Choose to include a
-                proforma invoice preview for the first renewal
-            body (CreateSubscriptionRequest, optional): TODO: type description
-                here.
-
-        Returns:
-            SignupProformaPreviewResponse: Response from the API. Created
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/proforma_invoices/preview.json')
-            .http_method(HttpMethodEnum.POST)
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .query_param(Parameter()
-                         .key('include=next_proforma_invoice')
-                         .value(include_next_proforma_invoice))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(SignupProformaPreviewResponse.from_dictionary)
             .local_error('400', 'Bad Request', ProformaBadRequestErrorResponseException)
             .local_error('403', 'Forbidden', APIException)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorMapResponseException)

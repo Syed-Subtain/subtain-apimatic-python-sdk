@@ -15,8 +15,6 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
 from advancedbilling.models.subscription_note_response import SubscriptionNoteResponse
 from advancedbilling.exceptions.api_exception import APIException
 
@@ -27,24 +25,17 @@ class SubscriptionNotesController(BaseController):
     def __init__(self, config):
         super(SubscriptionNotesController, self).__init__(config)
 
-    def create_subscription_note(self,
+    def update_subscription_note(self,
                                  subscription_id,
+                                 note_id,
                                  body=None):
-        """Does a POST request to /subscriptions/{subscription_id}/notes.json.
+        """Does a PUT request to /subscriptions/{subscription_id}/notes/{note_id}.json.
 
-        Use the following method to create a note for a subscription.
-        ## How to Use Subscription Notes
-        Notes allow you to record information about a particular Subscription
-        in a free text format.
-        If you have structured data such as birth date, color, etc., consider
-        using Metadata instead.
-        Full documentation on how to use Notes in the Chargify UI can be
-        located
-        [here](https://maxio-chargify.zendesk.com/hc/en-us/articles/54044349031
-        81-Subscription-Summary#notes).
+        Use the following method to update a note for a Subscription.
 
         Args:
             subscription_id (str): The Chargify id of the subscription
+            note_id (str): The Chargify id of the note
             body (UpdateSubscriptionNoteRequest, optional): TODO: type
                 description here.
 
@@ -61,11 +52,16 @@ class SubscriptionNotesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/notes.json')
-            .http_method(HttpMethodEnum.POST)
+            .path('/subscriptions/{subscription_id}/notes/{note_id}.json')
+            .http_method(HttpMethodEnum.PUT)
             .template_param(Parameter()
                             .key('subscription_id')
                             .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('note_id')
+                            .value(note_id)
                             .is_required(True)
                             .should_encode(True))
             .header_param(Parameter()
@@ -77,7 +73,7 @@ class SubscriptionNotesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -114,7 +110,7 @@ class SubscriptionNotesController(BaseController):
                             .value(subscription_id)
                             .is_required(True)
                             .should_encode(True))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -181,7 +177,7 @@ class SubscriptionNotesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -229,7 +225,7 @@ class SubscriptionNotesController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -237,17 +233,24 @@ class SubscriptionNotesController(BaseController):
             .deserialize_into(SubscriptionNoteResponse.from_dictionary)
         ).execute()
 
-    def update_subscription_note(self,
+    def create_subscription_note(self,
                                  subscription_id,
-                                 note_id,
                                  body=None):
-        """Does a PUT request to /subscriptions/{subscription_id}/notes/{note_id}.json.
+        """Does a POST request to /subscriptions/{subscription_id}/notes.json.
 
-        Use the following method to update a note for a Subscription.
+        Use the following method to create a note for a subscription.
+        ## How to Use Subscription Notes
+        Notes allow you to record information about a particular Subscription
+        in a free text format.
+        If you have structured data such as birth date, color, etc., consider
+        using Metadata instead.
+        Full documentation on how to use Notes in the Chargify UI can be
+        located
+        [here](https://maxio-chargify.zendesk.com/hc/en-us/articles/54044349031
+        81-Subscription-Summary#notes).
 
         Args:
             subscription_id (str): The Chargify id of the subscription
-            note_id (str): The Chargify id of the note
             body (UpdateSubscriptionNoteRequest, optional): TODO: type
                 description here.
 
@@ -264,16 +267,11 @@ class SubscriptionNotesController(BaseController):
 
         return super().new_api_call_builder.request(
             RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/notes/{note_id}.json')
-            .http_method(HttpMethodEnum.PUT)
+            .path('/subscriptions/{subscription_id}/notes.json')
+            .http_method(HttpMethodEnum.POST)
             .template_param(Parameter()
                             .key('subscription_id')
                             .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('note_id')
-                            .value(note_id)
                             .is_required(True)
                             .should_encode(True))
             .header_param(Parameter()
@@ -285,7 +283,7 @@ class SubscriptionNotesController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

@@ -9,7 +9,6 @@ This file was automatically generated for Maxio by APIMATIC v3.0 (
 from advancedbilling.api_helper import APIHelper
 from advancedbilling.models.component_price_point_item import ComponentPricePointItem
 from advancedbilling.models.price import Price
-from advancedbilling.models.pricing_scheme import PricingScheme
 
 
 class MeteredComponent(object):
@@ -172,6 +171,7 @@ class MeteredComponent(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -234,14 +234,15 @@ class MeteredComponent(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.name, type_callable=lambda value: isinstance(value, str)) \
                 and APIHelper.is_valid_type(value=dictionary.unit_name, type_callable=lambda value: isinstance(value, str)) \
-                and UnionTypeLookUp.get('MeteredComponentPricingScheme').validate(dictionary.pricing_scheme)
+                and UnionTypeLookUp.get('MeteredComponentPricingScheme').validate(dictionary.pricing_scheme).is_valid
 
         if not isinstance(dictionary, dict):
             return False
 
         return APIHelper.is_valid_type(value=dictionary.get('name'), type_callable=lambda value: isinstance(value, str)) \
             and APIHelper.is_valid_type(value=dictionary.get('unit_name'), type_callable=lambda value: isinstance(value, str)) \
-            and UnionTypeLookUp.get('MeteredComponentPricingScheme').validate(dictionary.get('pricing_scheme'))
+            and UnionTypeLookUp.get('MeteredComponentPricingScheme').validate(dictionary.get('pricing_scheme')).is_valid

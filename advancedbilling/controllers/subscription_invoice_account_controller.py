@@ -15,12 +15,10 @@ from apimatic_core.response_handler import ResponseHandler
 from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
-from advancedbilling.models.account_balances import AccountBalances
-from advancedbilling.models.create_prepayment_response import CreatePrepaymentResponse
-from advancedbilling.models.prepayments_response import PrepaymentsResponse
 from advancedbilling.models.service_credit import ServiceCredit
+from advancedbilling.models.account_balances import AccountBalances
+from advancedbilling.models.prepayments_response import PrepaymentsResponse
+from advancedbilling.models.create_prepayment_response import CreatePrepaymentResponse
 from advancedbilling.models.prepayment_response import PrepaymentResponse
 from advancedbilling.exceptions.api_exception import APIException
 from advancedbilling.exceptions.error_list_response_exception import ErrorListResponseException
@@ -33,6 +31,57 @@ class SubscriptionInvoiceAccountController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(SubscriptionInvoiceAccountController, self).__init__(config)
+
+    def issue_service_credit(self,
+                             subscription_id,
+                             body=None):
+        """Does a POST request to /subscriptions/{subscription_id}/service_credits.json.
+
+        Credit will be added to the subscription in the amount specified in
+        the request body. The credit is subsequently applied to the next
+        generated invoice.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            body (IssueServiceCreditRequest, optional): TODO: type description
+                here.
+
+        Returns:
+            ServiceCredit: Response from the API. Created
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/service_credits.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ServiceCredit.from_dictionary)
+        ).execute()
 
     def read_account_balances(self,
                               subscription_id):
@@ -68,68 +117,12 @@ class SubscriptionInvoiceAccountController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(AccountBalances.from_dictionary)
-        ).execute()
-
-    def create_prepayment(self,
-                          subscription_id,
-                          body=None):
-        """Does a POST request to /subscriptions/{subscription_id}/prepayments.json.
-
-        ## Create Prepayment
-        In order to specify a prepayment made against a subscription, specify
-        the `amount, memo, details, method`.
-        When the `method` specified is `"credit_card_on_file"`, the prepayment
-        amount will be collected using the default credit card payment profile
-        and applied to the prepayment account balance.  This is especially
-        useful for manual replenishment of prepaid subscriptions.
-        Please note that you **can't** pass `amount_in_cents`.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            body (CreatePrepaymentRequest, optional): TODO: type description
-                here.
-
-        Returns:
-            CreatePrepaymentResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/prepayments.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(CreatePrepaymentResponse.from_dictionary)
         ).execute()
 
     def list_prepayments(self,
@@ -217,7 +210,7 @@ class SubscriptionInvoiceAccountController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -226,57 +219,6 @@ class SubscriptionInvoiceAccountController(BaseController):
             .local_error('401', 'Unauthorized', APIException)
             .local_error('403', 'Forbidden', APIException)
             .local_error('404', 'Not Found', APIException)
-        ).execute()
-
-    def issue_service_credit(self,
-                             subscription_id,
-                             body=None):
-        """Does a POST request to /subscriptions/{subscription_id}/service_credits.json.
-
-        Credit will be added to the subscription in the amount specified in
-        the request body. The credit is subsequently applied to the next
-        generated invoice.
-
-        Args:
-            subscription_id (str): The Chargify id of the subscription
-            body (IssueServiceCreditRequest, optional): TODO: type description
-                here.
-
-        Returns:
-            ServiceCredit: Response from the API. Created
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/subscriptions/{subscription_id}/service_credits.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('subscription_id')
-                            .value(subscription_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ServiceCredit.from_dictionary)
         ).execute()
 
     def deduct_service_credit(self,
@@ -319,11 +261,67 @@ class SubscriptionInvoiceAccountController(BaseController):
             .body_param(Parameter()
                         .value(body))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def create_prepayment(self,
+                          subscription_id,
+                          body=None):
+        """Does a POST request to /subscriptions/{subscription_id}/prepayments.json.
+
+        ## Create Prepayment
+        In order to specify a prepayment made against a subscription, specify
+        the `amount, memo, details, method`.
+        When the `method` specified is `"credit_card_on_file"`, the prepayment
+        amount will be collected using the default credit card payment profile
+        and applied to the prepayment account balance.  This is especially
+        useful for manual replenishment of prepaid subscriptions.
+        Please note that you **can't** pass `amount_in_cents`.
+
+        Args:
+            subscription_id (str): The Chargify id of the subscription
+            body (CreatePrepaymentRequest, optional): TODO: type description
+                here.
+
+        Returns:
+            CreatePrepaymentResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/subscriptions/{subscription_id}/prepayments.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('subscription_id')
+                            .value(subscription_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(CreatePrepaymentResponse.from_dictionary)
         ).execute()
 
     def refund_prepayment(self,
@@ -379,7 +377,7 @@ class SubscriptionInvoiceAccountController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)

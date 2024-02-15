@@ -69,6 +69,7 @@ class RefundPrepayment(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -97,14 +98,15 @@ class RefundPrepayment(object):
 
         """
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.amount_in_cents, type_callable=lambda value: isinstance(value, float)) \
-                and UnionTypeLookUp.get('RefundPrepaymentAmount').validate(dictionary.amount) \
+                and UnionTypeLookUp.get('RefundPrepaymentAmount').validate(dictionary.amount).is_valid \
                 and APIHelper.is_valid_type(value=dictionary.memo, type_callable=lambda value: isinstance(value, str))
 
         if not isinstance(dictionary, dict):
             return False
 
         return APIHelper.is_valid_type(value=dictionary.get('amount_in_cents'), type_callable=lambda value: isinstance(value, float)) \
-            and UnionTypeLookUp.get('RefundPrepaymentAmount').validate(dictionary.get('amount')) \
+            and UnionTypeLookUp.get('RefundPrepaymentAmount').validate(dictionary.get('amount')).is_valid \
             and APIHelper.is_valid_type(value=dictionary.get('memo'), type_callable=lambda value: isinstance(value, str))

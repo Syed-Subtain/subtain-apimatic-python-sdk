@@ -75,7 +75,7 @@ class CustomFieldValueChange(object):
             object: An instance of this structure class.
 
         """
-        from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -109,12 +109,13 @@ class CustomFieldValueChange(object):
             boolean : if dictionary is valid contains required properties.
 
         """
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.event_type, type_callable=lambda value: isinstance(value, str)) \
                 and APIHelper.is_valid_type(value=dictionary.metafield_name, type_callable=lambda value: isinstance(value, str)) \
                 and APIHelper.is_valid_type(value=dictionary.metafield_id, type_callable=lambda value: isinstance(value, int)) \
-                and APIHelper.is_valid_type(value=dictionary.old_value, type_callable=lambda value: isinstance(value, str)) \
-                and APIHelper.is_valid_type(value=dictionary.new_value, type_callable=lambda value: isinstance(value, str)) \
+                and APIHelper.is_valid_type(value=dictionary.old_value, type_callable=lambda value: isinstance(value, str), is_value_nullable=True) \
+                and APIHelper.is_valid_type(value=dictionary.new_value, type_callable=lambda value: isinstance(value, str), is_value_nullable=True) \
                 and APIHelper.is_valid_type(value=dictionary.resource_type, type_callable=lambda value: isinstance(value, str)) \
                 and APIHelper.is_valid_type(value=dictionary.resource_id, type_callable=lambda value: isinstance(value, int))
 
@@ -124,7 +125,7 @@ class CustomFieldValueChange(object):
         return APIHelper.is_valid_type(value=dictionary.get('event_type'), type_callable=lambda value: isinstance(value, str)) \
             and APIHelper.is_valid_type(value=dictionary.get('metafield_name'), type_callable=lambda value: isinstance(value, str)) \
             and APIHelper.is_valid_type(value=dictionary.get('metafield_id'), type_callable=lambda value: isinstance(value, int)) \
-            and APIHelper.is_valid_type(value=dictionary.get('old_value'), type_callable=lambda value: isinstance(value, str)) \
-            and APIHelper.is_valid_type(value=dictionary.get('new_value'), type_callable=lambda value: isinstance(value, str)) \
+            and APIHelper.is_valid_type(value=dictionary.get('old_value'), type_callable=lambda value: isinstance(value, str), is_value_nullable=True) \
+            and APIHelper.is_valid_type(value=dictionary.get('new_value'), type_callable=lambda value: isinstance(value, str), is_value_nullable=True) \
             and APIHelper.is_valid_type(value=dictionary.get('resource_type'), type_callable=lambda value: isinstance(value, str)) \
             and APIHelper.is_valid_type(value=dictionary.get('resource_id'), type_callable=lambda value: isinstance(value, int))

@@ -17,10 +17,8 @@ from apimatic_core.types.parameter import Parameter
 from advancedbilling.http.http_method_enum import HttpMethodEnum
 from apimatic_core.types.array_serialization_format import SerializationFormats
 from apimatic_core.authentication.multiple.single_auth import Single
-from apimatic_core.authentication.multiple.and_auth_group import And
-from apimatic_core.authentication.multiple.or_auth_group import Or
-from advancedbilling.models.product_price_point_response import ProductPricePointResponse
 from advancedbilling.models.list_product_price_points_response import ListProductPricePointsResponse
+from advancedbilling.models.product_price_point_response import ProductPricePointResponse
 from advancedbilling.models.bulk_create_product_price_points_response import BulkCreateProductPricePointsResponse
 from advancedbilling.models.product_price_point_currency_price import ProductPricePointCurrencyPrice
 from advancedbilling.exceptions.error_map_response_exception import ErrorMapResponseException
@@ -32,58 +30,6 @@ class ProductPricePointsController(BaseController):
     """A Controller to access Endpoints in the advancedbilling API."""
     def __init__(self, config):
         super(ProductPricePointsController, self).__init__(config)
-
-    def create_product_price_point(self,
-                                   product_id,
-                                   body=None):
-        """Does a POST request to /products/{product_id}/price_points.json.
-
-        [Product Price Point
-        Documentation](https://chargify.zendesk.com/hc/en-us/articles/440775582
-        4155)
-
-        Args:
-            product_id (int): The id or handle of the product. When using the
-                handle, it must be prefixed with `handle:`
-            body (CreateProductPricePointRequest, optional): TODO: type
-                description here.
-
-        Returns:
-            ProductPricePointResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/products/{product_id}/price_points.json')
-            .http_method(HttpMethodEnum.POST)
-            .template_param(Parameter()
-                            .key('product_id')
-                            .value(product_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('Content-Type')
-                          .value('application/json'))
-            .body_param(Parameter()
-                        .value(body))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProductPricePointResponse.from_dictionary)
-        ).execute()
 
     def list_product_price_points(self,
                                   options=dict()):
@@ -161,12 +107,64 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .array_serialization_format(SerializationFormats.CSV)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ListProductPricePointsResponse.from_dictionary)
+        ).execute()
+
+    def create_product_price_point(self,
+                                   product_id,
+                                   body=None):
+        """Does a POST request to /products/{product_id}/price_points.json.
+
+        [Product Price Point
+        Documentation](https://chargify.zendesk.com/hc/en-us/articles/440775582
+        4155)
+
+        Args:
+            product_id (int): The id or handle of the product. When using the
+                handle, it must be prefixed with `handle:`
+            body (CreateProductPricePointRequest, optional): TODO: type
+                description here.
+
+        Returns:
+            ProductPricePointResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/products/{product_id}/price_points.json')
+            .http_method(HttpMethodEnum.POST)
+            .template_param(Parameter()
+                            .key('product_id')
+                            .value(product_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('Content-Type')
+                          .value('application/json'))
+            .body_param(Parameter()
+                        .value(body))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .body_serializer(APIHelper.json_serialize)
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProductPricePointResponse.from_dictionary)
         ).execute()
 
     def update_product_price_point(self,
@@ -220,118 +218,7 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProductPricePointResponse.from_dictionary)
-        ).execute()
-
-    def read_product_price_point(self,
-                                 product_id,
-                                 price_point_id,
-                                 currency_prices=None):
-        """Does a GET request to /products/{product_id}/price_points/{price_point_id}.json.
-
-        Use this endpoint to retrieve details for a specific product price
-        point.
-
-        Args:
-            product_id (int): The id or handle of the product. When using the
-                handle, it must be prefixed with `handle:`
-            price_point_id (int): The id or handle of the price point. When
-                using the handle, it must be prefixed with `handle:`
-            currency_prices (bool, optional): When fetching a product's price
-                points, if you have defined multiple currencies at the site
-                level, you can optionally pass the ?currency_prices=true query
-                param to include an array of currency price data in the
-                response. If the product price point is set to
-                use_site_exchange_rate: true, it will return pricing based on
-                the current exchange rate. If the flag is set to false, it
-                will return all of the defined prices for each currency.
-
-        Returns:
-            ProductPricePointResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/products/{product_id}/price_points/{price_point_id}.json')
-            .http_method(HttpMethodEnum.GET)
-            .template_param(Parameter()
-                            .key('product_id')
-                            .value(product_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('price_point_id')
-                            .value(price_point_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .query_param(Parameter()
-                         .key('currency_prices')
-                         .value(currency_prices))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProductPricePointResponse.from_dictionary)
-        ).execute()
-
-    def archive_product_price_point(self,
-                                    product_id,
-                                    price_point_id):
-        """Does a DELETE request to /products/{product_id}/price_points/{price_point_id}.json.
-
-        Use this endpoint to archive a product price point.
-
-        Args:
-            product_id (int): The id or handle of the product. When using the
-                handle, it must be prefixed with `handle:`
-            price_point_id (int): The id or handle of the price point. When
-                using the handle, it must be prefixed with `handle:`
-
-        Returns:
-            ProductPricePointResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/products/{product_id}/price_points/{price_point_id}.json')
-            .http_method(HttpMethodEnum.DELETE)
-            .template_param(Parameter()
-                            .key('product_id')
-                            .value(product_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('price_point_id')
-                            .value(price_point_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -379,58 +266,7 @@ class ProductPricePointsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .auth(Single('global'))
-        ).response(
-            ResponseHandler()
-            .is_nullify404(True)
-            .deserializer(APIHelper.json_deserialize)
-            .deserialize_into(ProductPricePointResponse.from_dictionary)
-        ).execute()
-
-    def set_default_price_point_for_product(self,
-                                            product_id,
-                                            price_point_id):
-        """Does a PATCH request to /products/{product_id}/price_points/{price_point_id}/default.json.
-
-        Use this endpoint to make a product price point the default for the
-        product.
-        Note: Custom product price points are not able to be set as the
-        default for a product.
-
-        Args:
-            product_id (int): The Chargify id of the product to which the
-                price point belongs
-            price_point_id (int): The Chargify id of the product price point
-
-        Returns:
-            ProductPricePointResponse: Response from the API. OK
-
-        Raises:
-            APIException: When an error occurs while fetching the data from
-                the remote API. This exception includes the HTTP Response
-                code, an error message, and the HTTP body that was received in
-                the request.
-
-        """
-
-        return super().new_api_call_builder.request(
-            RequestBuilder().server(Server.DEFAULT)
-            .path('/products/{product_id}/price_points/{price_point_id}/default.json')
-            .http_method(HttpMethodEnum.PATCH)
-            .template_param(Parameter()
-                            .key('product_id')
-                            .value(product_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .template_param(Parameter()
-                            .key('price_point_id')
-                            .value(price_point_id)
-                            .is_required(True)
-                            .should_encode(True))
-            .header_param(Parameter()
-                          .key('accept')
-                          .value('application/json'))
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -481,7 +317,7 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -538,13 +374,113 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ProductPricePointCurrencyPrice.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorMapResponseException)
+        ).execute()
+
+    def archive_product_price_point(self,
+                                    product_id,
+                                    price_point_id):
+        """Does a DELETE request to /products/{product_id}/price_points/{price_point_id}.json.
+
+        Use this endpoint to archive a product price point.
+
+        Args:
+            product_id (int): The id or handle of the product. When using the
+                handle, it must be prefixed with `handle:`
+            price_point_id (int): The id or handle of the price point. When
+                using the handle, it must be prefixed with `handle:`
+
+        Returns:
+            ProductPricePointResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/products/{product_id}/price_points/{price_point_id}.json')
+            .http_method(HttpMethodEnum.DELETE)
+            .template_param(Parameter()
+                            .key('product_id')
+                            .value(product_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('price_point_id')
+                            .value(price_point_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProductPricePointResponse.from_dictionary)
+        ).execute()
+
+    def set_default_price_point_for_product(self,
+                                            product_id,
+                                            price_point_id):
+        """Does a PATCH request to /products/{product_id}/price_points/{price_point_id}/default.json.
+
+        Use this endpoint to make a product price point the default for the
+        product.
+        Note: Custom product price points are not able to be set as the
+        default for a product.
+
+        Args:
+            product_id (int): The Chargify id of the product to which the
+                price point belongs
+            price_point_id (int): The Chargify id of the product price point
+
+        Returns:
+            ProductPricePointResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/products/{product_id}/price_points/{price_point_id}/default.json')
+            .http_method(HttpMethodEnum.PATCH)
+            .template_param(Parameter()
+                            .key('product_id')
+                            .value(product_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('price_point_id')
+                            .value(price_point_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProductPricePointResponse.from_dictionary)
         ).execute()
 
     def update_product_currency_prices(self,
@@ -595,7 +531,7 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .body_serializer(APIHelper.json_serialize)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
@@ -729,11 +665,73 @@ class ProductPricePointsController(BaseController):
                           .key('accept')
                           .value('application/json'))
             .array_serialization_format(SerializationFormats.CSV)
-            .auth(Single('global'))
+            .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
             .is_nullify404(True)
             .deserializer(APIHelper.json_deserialize)
             .deserialize_into(ListProductPricePointsResponse.from_dictionary)
             .local_error('422', 'Unprocessable Entity (WebDAV)', ErrorListResponseException)
+        ).execute()
+
+    def read_product_price_point(self,
+                                 product_id,
+                                 price_point_id,
+                                 currency_prices=None):
+        """Does a GET request to /products/{product_id}/price_points/{price_point_id}.json.
+
+        Use this endpoint to retrieve details for a specific product price
+        point.
+
+        Args:
+            product_id (int): The id or handle of the product. When using the
+                handle, it must be prefixed with `handle:`
+            price_point_id (int): The id or handle of the price point. When
+                using the handle, it must be prefixed with `handle:`
+            currency_prices (bool, optional): When fetching a product's price
+                points, if you have defined multiple currencies at the site
+                level, you can optionally pass the ?currency_prices=true query
+                param to include an array of currency price data in the
+                response. If the product price point is set to
+                use_site_exchange_rate: true, it will return pricing based on
+                the current exchange rate. If the flag is set to false, it
+                will return all of the defined prices for each currency.
+
+        Returns:
+            ProductPricePointResponse: Response from the API. OK
+
+        Raises:
+            APIException: When an error occurs while fetching the data from
+                the remote API. This exception includes the HTTP Response
+                code, an error message, and the HTTP body that was received in
+                the request.
+
+        """
+
+        return super().new_api_call_builder.request(
+            RequestBuilder().server(Server.DEFAULT)
+            .path('/products/{product_id}/price_points/{price_point_id}.json')
+            .http_method(HttpMethodEnum.GET)
+            .template_param(Parameter()
+                            .key('product_id')
+                            .value(product_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .template_param(Parameter()
+                            .key('price_point_id')
+                            .value(price_point_id)
+                            .is_required(True)
+                            .should_encode(True))
+            .query_param(Parameter()
+                         .key('currency_prices')
+                         .value(currency_prices))
+            .header_param(Parameter()
+                          .key('accept')
+                          .value('application/json'))
+            .auth(Single('BasicAuth'))
+        ).response(
+            ResponseHandler()
+            .is_nullify404(True)
+            .deserializer(APIHelper.json_deserialize)
+            .deserialize_into(ProductPricePointResponse.from_dictionary)
         ).execute()

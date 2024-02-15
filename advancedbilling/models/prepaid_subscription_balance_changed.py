@@ -59,7 +59,7 @@ class PrepaidSubscriptionBalanceChanged(object):
             object: An instance of this structure class.
 
         """
-        from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
+
         if dictionary is None:
             return None
 
@@ -87,6 +87,7 @@ class PrepaidSubscriptionBalanceChanged(object):
             boolean : if dictionary is valid contains required properties.
 
         """
+
         if isinstance(dictionary, cls):
             return APIHelper.is_valid_type(value=dictionary.reason, type_callable=lambda value: isinstance(value, str)) \
                 and APIHelper.is_valid_type(value=dictionary.current_account_balance_in_cents, type_callable=lambda value: isinstance(value, int)) \

@@ -86,7 +86,7 @@ class UnionTypeLookUp:
 
     """
     _templates = {
-        'CreateCouponBody': OneOf(
+        'UpdateCouponBody': OneOf(
             [
                 LeafType(CreateOrUpdateCoupon)
             ],
@@ -94,7 +94,7 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'UpdateCouponBody': OneOf(
+        'CreateCouponBody': OneOf(
             [
                 LeafType(CreateOrUpdateCoupon)
             ],
@@ -130,7 +130,7 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'ListMetafieldsInputDirection': OneOf(
+        'ListMetadataInputDirection': OneOf(
             [
                 LeafType(SortingDirection)
             ],
@@ -138,7 +138,7 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'ListMetadataInputDirection': OneOf(
+        'ListMetafieldsInputDirection': OneOf(
             [
                 LeafType(SortingDirection)
             ],
@@ -186,45 +186,6 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'CustomerErrorResponseErrors': OneOf(
-            [
-                LeafType(CustomerError),
-                LeafType(str,
-                         Context.create(
-                             is_array=True
-                         ))
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'SubscriptionCancellationMethod': OneOf(
-            [
-                LeafType(CancellationMethod)
-            ],
-            Context.create(
-               is_optional=True,
-               is_nullable=True
-            )
-        ),
-        'SubscriptionPaymentCollectionMethod': OneOf(
-            [
-                LeafType(PaymentCollectionMethod)
-            ],
-            Context.create(
-               is_optional=True,
-               is_nullable=True
-            )
-        ),
-        'SubscriptionGroup2': OneOf(
-            [
-                LeafType(SubscriptionGroupInlined)
-            ],
-            Context.create(
-               is_optional=True,
-               is_nullable=True
-            )
-        ),
         'ProductExpirationIntervalUnitCase0': OneOf(
             [
                 LeafType(ExtendedIntervalUnit)
@@ -269,6 +230,45 @@ class UnionTypeLookUp:
                is_nullable=True
             )
         ),
+        'SubscriptionCancellationMethod': OneOf(
+            [
+                LeafType(CancellationMethod)
+            ],
+            Context.create(
+               is_optional=True,
+               is_nullable=True
+            )
+        ),
+        'SubscriptionPaymentCollectionMethod': OneOf(
+            [
+                LeafType(PaymentCollectionMethod)
+            ],
+            Context.create(
+               is_optional=True,
+               is_nullable=True
+            )
+        ),
+        'SubscriptionGroup2': OneOf(
+            [
+                LeafType(SubscriptionGroupInlined)
+            ],
+            Context.create(
+               is_optional=True,
+               is_nullable=True
+            )
+        ),
+        'CustomerErrorResponseErrors': OneOf(
+            [
+                LeafType(CustomerError),
+                LeafType(str,
+                         Context.create(
+                             is_array=True
+                         ))
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
         'CreateMetafieldsRequestMetafields': AnyOf(
             [
                 LeafType(CreateMetafield),
@@ -291,13 +291,18 @@ class UnionTypeLookUp:
                is_nullable=True
             )
         ),
-        'UpdateMetafieldsRequestMetafields': AnyOf(
+        'CouponCompoundingStrategyCase0': OneOf(
             [
-                LeafType(UpdateMetafield),
-                LeafType(UpdateMetafield,
-                         Context.create(
-                             is_array=True
-                         ))
+                LeafType(CompoundingStrategy)
+            ]
+        ),
+        'CouponCompoundingStrategy': AnyOf(
+            [
+                OneOf(
+                    [
+                        LeafType(CompoundingStrategy)
+                    ]
+                )
             ],
             Context.create(
                is_optional=True
@@ -321,31 +326,6 @@ class UnionTypeLookUp:
         'CreateOrUpdatePercentageCouponCompoundingStrategy': OneOf(
             [
                 LeafType(CompoundingStrategy)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateOrUpdateFlatAmountCouponCompoundingStrategy': OneOf(
-            [
-                LeafType(CompoundingStrategy)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CouponCompoundingStrategyCase0': OneOf(
-            [
-                LeafType(CompoundingStrategy)
-            ]
-        ),
-        'CouponCompoundingStrategy': AnyOf(
-            [
-                OneOf(
-                    [
-                        LeafType(CompoundingStrategy)
-                    ]
-                )
             ],
             Context.create(
                is_optional=True
@@ -375,6 +355,56 @@ class UnionTypeLookUp:
             ],
             Context.create(
                is_nullable=True
+            )
+        ),
+        'UpdateMetafieldsRequestMetafields': AnyOf(
+            [
+                LeafType(UpdateMetafield),
+                LeafType(UpdateMetafield,
+                         Context.create(
+                             is_array=True
+                         ))
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateOrUpdateFlatAmountCouponCompoundingStrategy': OneOf(
+            [
+                LeafType(CompoundingStrategy)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'PriceStartingQuantity': OneOf(
+            [
+                LeafType(int),
+                LeafType(str)
+            ]
+        ),
+        'PriceEndingQuantity': OneOf(
+            [
+                LeafType(int),
+                LeafType(str)
+            ],
+            Context.create(
+               is_optional=True,
+               is_nullable=True
+            )
+        ),
+        'PriceUnitPrice': OneOf(
+            [
+                LeafType(float),
+                LeafType(str)
+            ]
+        ),
+        'ComponentCustomPricePricingScheme': OneOf(
+            [
+                LeafType(PricingScheme)
+            ],
+            Context.create(
+               is_optional=True
             )
         ),
         'SubscriptionGroupCreditCardFullNumber': OneOf(
@@ -440,37 +470,21 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'SubscriptionGroupComponentCustomPricePricingScheme': OneOf(
+        'MeteredComponentPricingScheme': OneOf(
             [
                 LeafType(PricingScheme)
+            ]
+        ),
+        'MeteredComponentUnitPrice': OneOf(
+            [
+                LeafType(str),
+                LeafType(float)
             ],
             Context.create(
                is_optional=True
             )
         ),
-        'PriceStartingQuantity': OneOf(
-            [
-                LeafType(int),
-                LeafType(str)
-            ]
-        ),
-        'PriceEndingQuantity': OneOf(
-            [
-                LeafType(int),
-                LeafType(str)
-            ],
-            Context.create(
-               is_optional=True,
-               is_nullable=True
-            )
-        ),
-        'PriceUnitPrice': OneOf(
-            [
-                LeafType(float),
-                LeafType(str)
-            ]
-        ),
-        'ComponentCustomPricePricingScheme': OneOf(
+        'SubscriptionGroupComponentCustomPricePricingScheme': OneOf(
             [
                 LeafType(PricingScheme)
             ],
@@ -565,20 +579,6 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'MeteredComponentPricingScheme': OneOf(
-            [
-                LeafType(PricingScheme)
-            ]
-        ),
-        'MeteredComponentUnitPrice': OneOf(
-            [
-                LeafType(str),
-                LeafType(float)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
         'QuantityBasedComponentPricingScheme': OneOf(
             [
                 LeafType(PricingScheme)
@@ -602,6 +602,41 @@ class UnionTypeLookUp:
             [
                 LeafType(str),
                 LeafType(float)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'PricePointExpirationIntervalUnit': OneOf(
+            [
+                LeafType(IntervalUnit)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateComponentPricePointsRequestPricePoints': AnyOf(
+            [
+                LeafType(CreateComponentPricePoint),
+                LeafType(CreatePrepaidUsageComponentPricePoint)
+            ],
+            Context.create(
+               is_array=True
+            )
+        ),
+        'CreatePaymentProfileExpirationMonth': OneOf(
+            [
+                LeafType(int),
+                LeafType(str)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreatePaymentProfileExpirationYear': OneOf(
+            [
+                LeafType(int),
+                LeafType(str)
             ],
             Context.create(
                is_optional=True
@@ -665,36 +700,27 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'PricePointExpirationIntervalUnit': OneOf(
+        'RefundConsolidatedInvoiceSegmentUids': OneOf(
             [
-                LeafType(IntervalUnit)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateComponentPricePointsRequestPricePoints': AnyOf(
-            [
-                LeafType(CreateComponentPricePoint),
-                LeafType(CreatePrepaidUsageComponentPricePoint)
-            ],
-            Context.create(
-               is_array=True
-            )
-        ),
-        'CreatePaymentProfileExpirationMonth': OneOf(
-            [
-                LeafType(int),
+                LeafType(str,
+                         Context.create(
+                             is_array=True
+                         )),
                 LeafType(str)
+            ]
+        ),
+        'InvoiceLineItemComponentCostData2': OneOf(
+            [
+                LeafType(InvoiceLineItemComponentCostData)
             ],
             Context.create(
-               is_optional=True
+               is_optional=True,
+               is_nullable=True
             )
         ),
-        'CreatePaymentProfileExpirationYear': OneOf(
+        'ComponentCostDataPricingScheme': OneOf(
             [
-                LeafType(int),
-                LeafType(str)
+                LeafType(PricingScheme)
             ],
             Context.create(
                is_optional=True
@@ -704,21 +730,6 @@ class UnionTypeLookUp:
             [
                 LeafType(BankAccountPaymentProfile),
                 LeafType(CreditCardPaymentProfile)
-            ]
-        ),
-        'RefundInvoiceRequestRefund': AnyOf(
-            [
-                LeafType(RefundInvoice),
-                LeafType(RefundConsolidatedInvoice)
-            ]
-        ),
-        'RefundConsolidatedInvoiceSegmentUids': OneOf(
-            [
-                LeafType(str,
-                         Context.create(
-                             is_array=True
-                         )),
-                LeafType(str)
             ]
         ),
         'RefundSegmentUids': OneOf(
@@ -733,18 +744,46 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'InvoiceLineItemComponentCostData2': OneOf(
+        'RefundInvoiceRequestRefund': AnyOf(
             [
-                LeafType(InvoiceLineItemComponentCostData)
+                LeafType(RefundInvoice),
+                LeafType(RefundConsolidatedInvoice)
+            ]
+        ),
+        'ApplyPaymentEventDataPaymentMethod': OneOf(
+            [
+                LeafType(PaymentMethodApplePayType),
+                LeafType(PaymentMethodBankAccountType),
+                LeafType(PaymentMethodCreditCardType),
+                LeafType(PaymentMethodExternalType),
+                LeafType(PaymentMethodPaypalType)
             ],
             Context.create(
-               is_optional=True,
-               is_nullable=True
+               is_optional=True
             )
         ),
-        'ComponentCostDataPricingScheme': OneOf(
+        'CreateMultiInvoicePaymentAmount': OneOf(
             [
-                LeafType(PricingScheme)
+                LeafType(str),
+                LeafType(float)
+            ]
+        ),
+        'RemovePaymentEventDataPaymentMethod': OneOf(
+            [
+                LeafType(PaymentMethodApplePayType),
+                LeafType(PaymentMethodBankAccountType),
+                LeafType(PaymentMethodCreditCardType),
+                LeafType(PaymentMethodExternalType),
+                LeafType(PaymentMethodPaypalType)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateInvoicePaymentAmount': OneOf(
+            [
+                LeafType(str),
+                LeafType(float)
             ],
             Context.create(
                is_optional=True
@@ -766,30 +805,6 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'ApplyPaymentEventDataPaymentMethod': OneOf(
-            [
-                LeafType(PaymentMethodApplePayType),
-                LeafType(PaymentMethodBankAccountType),
-                LeafType(PaymentMethodCreditCardType),
-                LeafType(PaymentMethodExternalType),
-                LeafType(PaymentMethodPaypalType)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'RemovePaymentEventDataPaymentMethod': OneOf(
-            [
-                LeafType(PaymentMethodApplePayType),
-                LeafType(PaymentMethodBankAccountType),
-                LeafType(PaymentMethodCreditCardType),
-                LeafType(PaymentMethodExternalType),
-                LeafType(PaymentMethodPaypalType)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
         'InvoiceEvent1PaymentMethod': OneOf(
             [
                 LeafType(PaymentMethodApplePayType),
@@ -802,20 +817,32 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'CreateInvoicePaymentAmount': OneOf(
+        'UsageQuantity': OneOf(
             [
-                LeafType(str),
-                LeafType(float)
+                LeafType(int),
+                LeafType(str)
             ],
             Context.create(
                is_optional=True
             )
         ),
-        'CreateMultiInvoicePaymentAmount': OneOf(
+        'CreateSubscriptionComponentComponentId': OneOf(
             [
-                LeafType(str),
-                LeafType(float)
-            ]
+                LeafType(int),
+                LeafType(str)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateSubscriptionComponentPricePointId': OneOf(
+            [
+                LeafType(int),
+                LeafType(str)
+            ],
+            Context.create(
+               is_optional=True
+            )
         ),
         'SubscriptionComponentPricePointType': OneOf(
             [
@@ -851,15 +878,6 @@ class UnionTypeLookUp:
             Context.create(
                is_optional=True,
                is_nullable=True
-            )
-        ),
-        'UsageQuantity': OneOf(
-            [
-                LeafType(int),
-                LeafType(str)
-            ],
-            Context.create(
-               is_optional=True
             )
         ),
         'CreateSubscriptionComponents': OneOf(
@@ -907,64 +925,10 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'CreateSubscriptionComponentComponentId': OneOf(
-            [
-                LeafType(int),
-                LeafType(str)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateSubscriptionComponentPricePointId': OneOf(
-            [
-                LeafType(int),
-                LeafType(str)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'UpdateSubscriptionSnapDay': OneOf(
-            [
-                LeafType(SnapDay),
-                LeafType(int)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'UpdateSubscriptionNetTerms': OneOf(
-            [
-                LeafType(str),
-                LeafType(int)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
         'ReactivateSubscriptionRequestResume': OneOf(
             [
                 LeafType(bool),
                 LeafType(ResumeOptions)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'RenewalPreviewComponentComponentId': OneOf(
-            [
-                LeafType(str),
-                LeafType(int)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'RenewalPreviewComponentPricePointId': OneOf(
-            [
-                LeafType(str),
-                LeafType(int)
             ],
             Context.create(
                is_optional=True
@@ -1024,6 +988,24 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
+        'RenewalPreviewComponentComponentId': OneOf(
+            [
+                LeafType(str),
+                LeafType(int)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'RenewalPreviewComponentPricePointId': OneOf(
+            [
+                LeafType(str),
+                LeafType(int)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
         'CreateInvoiceCouponPercentage': OneOf(
             [
                 LeafType(str),
@@ -1059,22 +1041,34 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'IssueServiceCreditAmount': OneOf(
-            [
-                LeafType(float),
-                LeafType(str)
-            ]
-        ),
         'DeductServiceCreditAmount': OneOf(
             [
                 LeafType(str),
                 LeafType(float)
             ]
         ),
-        'CreateSubscriptionGroupSubscriptionId': OneOf(
+        'UpdateSubscriptionSnapDay': OneOf(
+            [
+                LeafType(SnapDay),
+                LeafType(int)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'UpdateSubscriptionNetTerms': OneOf(
             [
                 LeafType(str),
                 LeafType(int)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'IssueServiceCreditAmount': OneOf(
+            [
+                LeafType(float),
+                LeafType(str)
             ]
         ),
         'AddSubscriptionToAGroupGroup': OneOf(
@@ -1086,49 +1080,11 @@ class UnionTypeLookUp:
                is_optional=True
             )
         ),
-        'CreateSegmentSegmentProperty1Value': OneOf(
+        'CreateSubscriptionGroupSubscriptionId': OneOf(
             [
                 LeafType(str),
-                LeafType(float),
-                LeafType(int),
-                LeafType(bool)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateSegmentSegmentProperty2Value': OneOf(
-            [
-                LeafType(str),
-                LeafType(float),
-                LeafType(int),
-                LeafType(bool)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateSegmentSegmentProperty3Value': OneOf(
-            [
-                LeafType(str),
-                LeafType(float),
-                LeafType(int),
-                LeafType(bool)
-            ],
-            Context.create(
-               is_optional=True
-            )
-        ),
-        'CreateSegmentSegmentProperty4Value': OneOf(
-            [
-                LeafType(str),
-                LeafType(float),
-                LeafType(int),
-                LeafType(bool)
-            ],
-            Context.create(
-               is_optional=True
-            )
+                LeafType(int)
+            ]
         ),
         'CreateOrUpdateSegmentPriceUnitPrice': OneOf(
             [
@@ -1170,6 +1126,50 @@ class UnionTypeLookUp:
             )
         ),
         'SegmentSegmentProperty4Value': OneOf(
+            [
+                LeafType(str),
+                LeafType(float),
+                LeafType(int),
+                LeafType(bool)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateSegmentSegmentProperty1Value': OneOf(
+            [
+                LeafType(str),
+                LeafType(float),
+                LeafType(int),
+                LeafType(bool)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateSegmentSegmentProperty2Value': OneOf(
+            [
+                LeafType(str),
+                LeafType(float),
+                LeafType(int),
+                LeafType(bool)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateSegmentSegmentProperty3Value': OneOf(
+            [
+                LeafType(str),
+                LeafType(float),
+                LeafType(int),
+                LeafType(bool)
+            ],
+            Context.create(
+               is_optional=True
+            )
+        ),
+        'CreateSegmentSegmentProperty4Value': OneOf(
             [
                 LeafType(str),
                 LeafType(float),
