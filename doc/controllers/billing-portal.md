@@ -47,7 +47,6 @@ def revoke_billing_portal_access(self,
 customer_id = 150
 
 result = billing_portal_controller.revoke_billing_portal_access(customer_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -100,7 +99,6 @@ def read_billing_portal_link(self,
 customer_id = 150
 
 result = billing_portal_controller.read_billing_portal_link(customer_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -161,7 +159,6 @@ def resend_billing_portal_invitation(self,
 customer_id = 150
 
 result = billing_portal_controller.resend_billing_portal_invitation(customer_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -224,7 +221,6 @@ def enable_billing_portal_for_customer(self,
 customer_id = 150
 
 result = billing_portal_controller.enable_billing_portal_for_customer(customer_id)
-print(result)
 ```
 
 ## Errors

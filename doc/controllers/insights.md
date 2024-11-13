@@ -43,7 +43,6 @@ def read_mrr(self,
 
 ```python
 result = insights_controller.read_mrr()
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -91,7 +90,6 @@ def read_site_stats(self)
 
 ```python
 result = insights_controller.read_site_stats()
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -153,8 +151,8 @@ def read_mrr_movements(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `subscription_id` | `int` | Query, Optional | optionally filter results by subscription |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 10. The maximum allowed values is 50; any per_page value over 50 will be changed to 50.<br>Use in query `per_page=20`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 10. The maximum allowed values is 50; any per_page value over 50 will be changed to 50.<br>Use in query `per_page=20`.<br>**Default**: `10`<br>**Constraints**: `<= 50` |
 | `direction` | [Sorting direction](../../doc/models/sorting-direction.md) \| None | Query, Optional | This is a container for one-of cases. |
 
 ## Response Type
@@ -169,7 +167,6 @@ collect = {
     'per_page': 20
 }
 result = insights_controller.read_mrr_movements(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -242,8 +239,8 @@ def list_mrr_per_subscription(self,
 |  --- | --- | --- | --- |
 | `filter_subscription_ids` | `List[int]` | Query, Optional | Submit ids in order to limit results. Use in query: `filter[subscription_ids]=1,2,3`. |
 | `at_time` | `str` | Query, Optional | Submit a timestamp in ISO8601 format to request MRR for a historic time. Use in query: `at_time=2022-01-10T10:00:00-05:00`. |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `direction` | [`Direction`](../../doc/models/direction.md) | Query, Optional | Controls the order in which results are returned. Records are ordered by subscription_id in ascending order by default. Use in query `direction=desc`. |
 
 ## Response Type
@@ -260,7 +257,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')
     'direction': Direction.DESC
 }
 result = insights_controller.list_mrr_per_subscription(collect)
-print(result)
 ```
 
 ## Errors

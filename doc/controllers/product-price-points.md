@@ -37,8 +37,8 @@ def list_product_price_points(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `product_id` | `int` | Template, Required | The id or handle of the product. When using the handle, it must be prefixed with `handle:` |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 10. The maximum allowed values is 200; any per_page value over 200 will be changed to 200. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 10. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>**Default**: `10`<br>**Constraints**: `<= 200` |
 | `currency_prices` | `bool` | Query, Optional | When fetching a product's price points, if you have defined multiple currencies at the site level, you can optionally pass the ?currency_prices=true query param to include an array of currency price data in the response. If the product price point is set to use_site_exchange_rate: true, it will return pricing based on the current exchange rate. If the flag is set to false, it will return all of the defined prices for each currency. |
 | `filter_type` | [`List[PricePointType]`](../../doc/models/price-point-type.md) | Query, Optional | Use in query: `filter[type]=catalog,default`. |
 
@@ -55,7 +55,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')
     'per_page': 10
 }
 result = product_price_points_controller.list_product_price_points(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -136,7 +135,6 @@ result = product_price_points_controller.create_product_price_point(
     product_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -211,7 +209,6 @@ result = product_price_points_controller.update_product_price_point(
     price_point_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -274,7 +271,6 @@ result = product_price_points_controller.unarchive_product_price_point(
     product_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -370,7 +366,6 @@ result = product_price_points_controller.create_product_price_points(
     product_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -457,7 +452,6 @@ result = product_price_points_controller.create_product_currency_prices(
     product_price_point_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -499,7 +493,6 @@ result = product_price_points_controller.archive_product_price_point(
     product_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -564,7 +557,6 @@ result = product_price_points_controller.set_default_price_point_for_product(
     product_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -642,7 +634,6 @@ result = product_price_points_controller.update_product_currency_prices(
     product_price_point_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -684,8 +675,8 @@ def list_all_product_price_points(self,
 | `filter_start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns price points with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. |
 | `filter_type` | [`PricePointType`](../../doc/models/price-point-type.md) | Query, Optional | Allows fetching price points with matching type. Use in query: `filter[type]=catalog,custom`. |
 | `include` | [`ListProductsPricePointsInclude`](../../doc/models/list-products-price-points-include.md) | Query, Optional | Allows including additional data in the response. Use in query: `include=currency_prices`. |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 
 ## Response Type
 
@@ -700,7 +691,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'per_page': 50
 }
 result = product_price_points_controller.list_all_product_price_points(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -774,7 +764,6 @@ result = product_price_points_controller.read_product_price_point(
     product_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*

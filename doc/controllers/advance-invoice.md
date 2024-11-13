@@ -52,7 +52,6 @@ result = advance_invoice_controller.issue_advance_invoice(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -89,7 +88,6 @@ def read_advance_invoice(self,
 subscription_id = 'subscription_id0'
 
 result = advance_invoice_controller.read_advance_invoice(subscription_id)
-print(result)
 ```
 
 ## Errors
@@ -128,7 +126,6 @@ def void_advance_invoice(self,
 subscription_id = 'subscription_id0'
 
 result = advance_invoice_controller.void_advance_invoice(subscription_id)
-print(result)
 ```
 
 ## Errors

@@ -74,7 +74,6 @@ result = events_based_billing_segments_controller.create_segment(
     price_point_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -125,7 +124,6 @@ result = events_based_billing_segments_controller.update_segments(
     component_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Errors
@@ -179,7 +177,6 @@ result = events_based_billing_segments_controller.update_segment(
     price_point_id,
     id
 )
-print(result)
 ```
 
 ## Errors
@@ -226,12 +223,11 @@ price_point_id = 'price_point_id8'
 
 id = 60
 
-result = events_based_billing_segments_controller.delete_segment(
+events_based_billing_segments_controller.delete_segment(
     component_id,
     price_point_id,
     id
 )
-print(result)
 ```
 
 ## Errors
@@ -282,7 +278,6 @@ result = events_based_billing_segments_controller.create_segments(
     component_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Errors
@@ -314,8 +309,8 @@ def list_segments_for_price_point(self,
 |  --- | --- | --- | --- |
 | `component_id` | `str` | Template, Required | ID or Handle for the Component |
 | `price_point_id` | `str` | Template, Required | ID or Handle for the Price Point belonging to the Component |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `30`<br>**Constraints**: `<= 200` |
 | `filter_segment_property_1_value` | `str` | Query, Optional | The value passed here would be used to filter segments. Pass a value related to `segment_property_1` on attached Metric. If empty string is passed, this filter would be rejected. Use in query `filter[segment_property_1_value]=EU`. |
 | `filter_segment_property_2_value` | `str` | Query, Optional | The value passed here would be used to filter segments. Pass a value related to `segment_property_2` on attached Metric. If empty string is passed, this filter would be rejected. |
 | `filter_segment_property_3_value` | `str` | Query, Optional | The value passed here would be used to filter segments. Pass a value related to `segment_property_3` on attached Metric. If empty string is passed, this filter would be rejected. |
@@ -335,7 +330,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'per_page': 50
 }
 result = events_based_billing_segments_controller.list_segments_for_price_point(collect)
-print(result)
 ```
 
 ## Errors

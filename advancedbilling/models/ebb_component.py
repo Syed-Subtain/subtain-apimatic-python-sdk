@@ -217,15 +217,21 @@ class EBBComponent(object):
         from advancedbilling.utilities.union_type_lookup import UnionTypeLookUp
 
         if isinstance(dictionary, cls):
-            return APIHelper.is_valid_type(value=dictionary.name, type_callable=lambda value: isinstance(value, str)) \
-                and APIHelper.is_valid_type(value=dictionary.unit_name, type_callable=lambda value: isinstance(value, str)) \
+            return APIHelper.is_valid_type(value=dictionary.name,
+                                           type_callable=lambda value: isinstance(value, str)) \
+                and APIHelper.is_valid_type(value=dictionary.unit_name,
+                                            type_callable=lambda value: isinstance(value, str)) \
                 and UnionTypeLookUp.get('EBBComponentPricingScheme').validate(dictionary.pricing_scheme).is_valid \
-                and APIHelper.is_valid_type(value=dictionary.event_based_billing_metric_id, type_callable=lambda value: isinstance(value, int))
+                and APIHelper.is_valid_type(value=dictionary.event_based_billing_metric_id,
+                                            type_callable=lambda value: isinstance(value, int))
 
         if not isinstance(dictionary, dict):
             return False
 
-        return APIHelper.is_valid_type(value=dictionary.get('name'), type_callable=lambda value: isinstance(value, str)) \
-            and APIHelper.is_valid_type(value=dictionary.get('unit_name'), type_callable=lambda value: isinstance(value, str)) \
+        return APIHelper.is_valid_type(value=dictionary.get('name'),
+                                       type_callable=lambda value: isinstance(value, str)) \
+            and APIHelper.is_valid_type(value=dictionary.get('unit_name'),
+                                        type_callable=lambda value: isinstance(value, str)) \
             and UnionTypeLookUp.get('EBBComponentPricingScheme').validate(dictionary.get('pricing_scheme')).is_valid \
-            and APIHelper.is_valid_type(value=dictionary.get('event_based_billing_metric_id'), type_callable=lambda value: isinstance(value, int))
+            and APIHelper.is_valid_type(value=dictionary.get('event_based_billing_metric_id'),
+                                        type_callable=lambda value: isinstance(value, int))

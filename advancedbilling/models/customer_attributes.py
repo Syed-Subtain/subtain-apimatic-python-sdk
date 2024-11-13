@@ -24,8 +24,7 @@ class CustomerAttributes(object):
             a customer via attributes.
         cc_emails (str): A list of emails that should be cc’d on all customer
             communications. Optional.
-        organization (str): The organization/company of the customer.
-            Optional.
+        organization (str): The organization/company of the customer. Optional.
         reference (str): A customer “reference”, or unique identifier from
             your app, stored in Chargify. Can be used so that you may
             reference your customer’s within Chargify using the same unique
@@ -49,8 +48,7 @@ class CustomerAttributes(object):
         phone (str): (Optional) The phone number of the customer.
         verified (bool): TODO: type description here.
         tax_exempt (bool): (Optional) The tax_exempt status of the customer.
-            Acceptable values are true or 1 for true and false or 0 for
-            false.
+            Acceptable values are true or 1 for true and false or 0 for false.
         vat_number (str): (Optional) Supplying the VAT number allows EU
             customer’s to opt-out of the Value Added Tax assuming the merchant
             address and customer billing address are not within the same EU

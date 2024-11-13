@@ -71,9 +71,13 @@ class CreateEBBComponent(object):
         """
 
         if isinstance(dictionary, cls):
-            return APIHelper.is_valid_type(value=dictionary.event_based_component, type_callable=lambda value: EBBComponent.validate(value))
+            return APIHelper.is_valid_type(value=dictionary.event_based_component,
+                                           type_callable=lambda value: EBBComponent.validate(value),
+                                           is_model_dict=True)
 
         if not isinstance(dictionary, dict):
             return False
 
-        return APIHelper.is_valid_type(value=dictionary.get('event_based_component'), type_callable=lambda value: EBBComponent.validate(value))
+        return APIHelper.is_valid_type(value=dictionary.get('event_based_component'),
+                                       type_callable=lambda value: EBBComponent.validate(value),
+                                       is_model_dict=True)

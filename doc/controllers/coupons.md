@@ -42,14 +42,14 @@ def list_coupons_for_product_family(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `product_family_id` | `int` | Template, Required | The Chargify id of the product family to which the coupon belongs |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `30`<br>**Constraints**: `<= 200` |
 | `filter_date_field` | [`BasicDateField`](../../doc/models/basic-date-field.md) | Query, Optional | The type of filter you would like to apply to your search. Use in query `filter[date_field]=created_at`. |
 | `filter_end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns coupons with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. Use in query `filter[date_field]=2011-12-15`. |
 | `filter_end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns coupons with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. Use in query `?filter[end_datetime]=2011-12-1T10:15:30+01:00`. |
 | `filter_start_date` | `str` | Query, Optional | The start date (format YYYY-MM-DD) with which to filter the date_field. Returns coupons with a timestamp at or after midnight (12:00:00 AM) in your site’s time zone on the date specified. Use in query `filter[start_date]=2011-12-17`. |
 | `filter_start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns coupons with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. Use in query `filter[start_datetime]=2011-12-19T10:15:30+01:00`. |
-| `filter_ids` | `List[int]` | Query, Optional | Allows fetching coupons with matching id based on provided values. Use in query `filter[ids]=1,2,3`. |
+| `filter_ids` | `List[int]` | Query, Optional | Allows fetching coupons with matching id based on provided values. Use in query `filter[ids]=1,2,3`.<br>**Constraints**: *Minimum Items*: `1` |
 | `filter_codes` | `List[str]` | Query, Optional | Allows fetching coupons with matching codes based on provided values. Use in query `filter[codes]=free,free_trial`. |
 | `currency_prices` | `bool` | Query, Optional | When fetching coupons, if you have defined multiple currencies at the site level, you can optionally pass the `?currency_prices=true` query param to include an array of currency price data in the response. Use in query `currency_prices=true`. |
 | `filter_use_site_exchange_rate` | `bool` | Query, Optional | Allows fetching coupons with matching use_site_exchange_rate based on provided value. Use in query `filter[use_site_exchange_rate]=true`. |
@@ -68,7 +68,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'currency_prices': True
 }
 result = coupons_controller.list_coupons_for_product_family(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -192,7 +191,6 @@ def read_coupon_by_code(self,
 
 ```python
 result = coupons_controller.read_coupon_by_code()
-print(result)
 ```
 
 
@@ -210,8 +208,8 @@ def list_coupon_subcodes(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `coupon_id` | `int` | Template, Required | The Chargify id of the coupon |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 
 ## Response Type
 
@@ -226,7 +224,6 @@ collect = {
     'per_page': 50
 }
 result = coupons_controller.list_coupon_subcodes(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -307,7 +304,6 @@ result = coupons_controller.update_coupon_subcodes(
     coupon_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -358,7 +354,6 @@ def validate_coupon(self,
 code = 'code8'
 
 result = coupons_controller.validate_coupon(code)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -460,7 +455,6 @@ result = coupons_controller.update_coupon(
     coupon_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -509,15 +503,15 @@ def list_coupons(self,
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 30. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `30`<br>**Constraints**: `<= 200` |
 | `date_field` | [`BasicDateField`](../../doc/models/basic-date-field.md) | Query, Optional | The field was deprecated: on January 20, 2022. We recommend using filter[date_field] instead to achieve the same result. The type of filter you would like to apply to your search. |
 | `start_date` | `str` | Query, Optional | The field was deprecated: on January 20, 2022. We recommend using filter[start_date] instead to achieve the same result. The start date (format YYYY-MM-DD) with which to filter the date_field. Returns coupons with a timestamp at or after midnight (12:00:00 AM) in your site’s time zone on the date specified. |
 | `end_date` | `str` | Query, Optional | The field was deprecated: on January 20, 2022. We recommend using filter[end_date] instead to achieve the same result. The end date (format YYYY-MM-DD) with which to filter the date_field. Returns coupons with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. |
 | `start_datetime` | `str` | Query, Optional | The field was deprecated: on January 20, 2022. We recommend using filter[start_datetime] instead to achieve the same result. The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns coupons with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. |
 | `end_datetime` | `str` | Query, Optional | The field was deprecated: on January 20, 2022. We recommend using filter[end_datetime] instead to achieve the same result. The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns coupons with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. |
-| `filter_ids` | `List[int]` | Query, Optional | Allows fetching coupons with matching id based on provided values. Use in query `filter[ids]=1,2,3`. |
-| `filter_codes` | `List[str]` | Query, Optional | Allows fetching coupons with matching code based on provided values. Use in query `filter[ids]=1,2,3`. |
+| `filter_ids` | `List[int]` | Query, Optional | Allows fetching coupons with matching id based on provided values. Use in query `filter[ids]=1,2,3`.<br>**Constraints**: *Minimum Items*: `1` |
+| `filter_codes` | `List[str]` | Query, Optional | Allows fetching coupons with matching code based on provided values. Use in query `filter[ids]=1,2,3`.<br>**Constraints**: *Minimum Items*: `1` |
 | `currency_prices` | `bool` | Query, Optional | When fetching coupons, if you have defined multiple currencies at the site level, you can optionally pass the `?currency_prices=true` query param to include an array of currency price data in the response. Use in query `currency_prices=true`. |
 | `filter_end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns coupons with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. Use in query `filter[end_date]=2011-12-17`. |
 | `filter_end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns coupons with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. Use in query `filter[end_datetime]=2011-12-19T10:15:30+01:00`. |
@@ -540,7 +534,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'currency_prices': True
 }
 result = coupons_controller.list_coupons(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -637,7 +630,6 @@ result = coupons_controller.update_coupon_currency_prices(
     coupon_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -718,7 +710,6 @@ result = coupons_controller.create_coupon_subcodes(
     coupon_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -785,11 +776,10 @@ coupon_id = 162
 
 subcode = 'subcode4'
 
-result = coupons_controller.delete_coupon_subcode(
+coupons_controller.delete_coupon_subcode(
     coupon_id,
     subcode
 )
-print(result)
 ```
 
 ## Errors
@@ -866,7 +856,6 @@ result = coupons_controller.create_coupon(
     product_family_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -913,7 +902,6 @@ result = coupons_controller.read_coupon(
     product_family_id,
     coupon_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -981,7 +969,6 @@ result = coupons_controller.archive_coupon(
     product_family_id,
     coupon_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1047,7 +1034,6 @@ result = coupons_controller.read_coupon_usage(
     product_family_id,
     coupon_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*

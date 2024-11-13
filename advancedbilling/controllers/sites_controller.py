@@ -147,8 +147,8 @@ class SitesController(BaseController):
             "whopays_default_payer": "self"
         You can read more about these settings here:
          [Who Pays & Customer
-         Hierarchy](https://chargify.zendesk.com/hc/en-us/articles/440774668329
-         1)
+        Hierarchy](https://chargify.zendesk.com/hc/en-us/articles/4407746683291
+        )
 
         Returns:
             SiteResponse: Response from the API. OK

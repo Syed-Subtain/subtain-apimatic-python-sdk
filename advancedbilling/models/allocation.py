@@ -17,8 +17,7 @@ class Allocation(object):
 
     Attributes:
         component_id (int): The integer component ID for the allocation. This
-            references a component that you have created in your Product
-            setup
+            references a component that you have created in your Product setup
         subscription_id (int): The integer subscription ID for the allocation.
             This references a unique subscription in your Site
         quantity (int): The allocated quantity set in to effect by the

@@ -22,8 +22,7 @@ class ApplyDebitNoteEventData(object):
             generated automatically by Chargify and has the prefix "db_"
             followed by alphanumeric characters.
         original_amount (str): The full, original amount of the debit note.
-        applied_amount (str): The amount of the debit note applied to
-            invoice.
+        applied_amount (str): The amount of the debit note applied to invoice.
 
     """
 

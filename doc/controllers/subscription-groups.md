@@ -57,7 +57,6 @@ body = CreateSubscriptionGroupRequest(
 result = subscription_groups_controller.create_subscription_group(
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -118,7 +117,6 @@ def read_subscription_group(self,
 uid = 'uid0'
 
 result = subscription_groups_controller.read_subscription_group(uid)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -188,8 +186,7 @@ def remove_subscription_from_group(self,
 ```python
 subscription_id = 'subscription_id0'
 
-result = subscription_groups_controller.remove_subscription_from_group(subscription_id)
-print(result)
+subscription_groups_controller.remove_subscription_from_group(subscription_id)
 ```
 
 ## Errors
@@ -226,7 +223,6 @@ def delete_subscription_group(self,
 uid = 'uid0'
 
 result = subscription_groups_controller.delete_subscription_group(uid)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -272,7 +268,6 @@ def read_subscription_group_by_subscription_id(self,
 subscription_id = 'subscription_id0'
 
 result = subscription_groups_controller.read_subscription_group_by_subscription_id(subscription_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -380,7 +375,6 @@ result = subscription_groups_controller.create_subscription_group_hierarchy(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -458,7 +452,6 @@ body = SubscriptionGroupSignupRequest(
 result = subscription_groups_controller.signup_with_subscription_group(
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -485,8 +478,8 @@ def list_subscription_groups(self,
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `include` | `str` | Query, Optional | A list of additional information to include in the response. The following values are supported:<br><br>- `account_balances`: Account balance information for the subscription groups. Use in query: `include[]=account_balances` |
 
 ## Response Type
@@ -501,7 +494,6 @@ collect = {
     'per_page': 50
 }
 result = subscription_groups_controller.list_subscription_groups(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -584,7 +576,6 @@ result = subscription_groups_controller.update_subscription_group_members(
     uid,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*

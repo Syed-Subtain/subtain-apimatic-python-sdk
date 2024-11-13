@@ -254,8 +254,7 @@ class CustomFieldsController(BaseController):
             name (str): Name of the custom field.
             current_name (str, optional): This only applies when you are
                 updating an existing record and you wish to rename the field.
-                Note you must supply name and current_name to rename the
-                field
+                Note you must supply name and current_name to rename the field
             body (UpdateMetafieldsRequest, optional): TODO: type description
                 here.
 
@@ -491,8 +490,7 @@ class CustomFieldsController(BaseController):
                 subscription for which the metadata applies
             name (str, optional): Name of field to be removed.
             names (List[str], optional): Names of fields to be removed. Use in
-                query:
-                `names[]=field1&names[]=my-field&names[]=another-field`.
+                query: `names[]=field1&names[]=my-field&names[]=another-field`.
 
         Returns:
             void: Response from the API. OK
@@ -525,7 +523,7 @@ class CustomFieldsController(BaseController):
             .query_param(Parameter()
                          .key('names[]')
                          .value(names))
-            .array_serialization_format(SerializationFormats.PLAIN)
+            .array_serialization_format(SerializationFormats.UN_INDEXED)
             .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()
@@ -659,7 +657,7 @@ class CustomFieldsController(BaseController):
             .header_param(Parameter()
                           .key('accept')
                           .value('application/json'))
-            .array_serialization_format(SerializationFormats.PLAIN)
+            .array_serialization_format(SerializationFormats.CSV)
             .auth(Single('BasicAuth'))
         ).response(
             ResponseHandler()

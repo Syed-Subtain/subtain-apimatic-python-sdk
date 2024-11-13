@@ -764,8 +764,7 @@ class CouponsController(BaseController):
         This request allows you to create specific subcodes underneath an
         existing coupon code.
         *Note*: If you are using any of the allowed special characters ("%",
-        "@", "+", "-", "_", and "."), you must encode them for use in the
-        URL.
+        "@", "+", "-", "_", and "."), you must encode them for use in the URL.
             % to %25
             @ to %40
             + to %2B
@@ -774,8 +773,8 @@ class CouponsController(BaseController):
             . to %2E
         So, if the coupon subcode is `20%OFF`, the URL to delete this coupon
         subcode would be:
-        `https://<subdomain>.chargify.com/coupons/567/codes/20%25OFF.<format>`
-        
+        `https://<subdomain>.chargify.com/coupons/567/codes/20%25OFF.<format>`
+
         Args:
             coupon_id (int): The Chargify id of the coupon
             body (CouponSubcodes, optional): TODO: type description here.
@@ -829,8 +828,7 @@ class CouponsController(BaseController):
         http://subdomain.chargify.com/coupons/567/codes/20OFF.<format>
         ```
         Note: If you are using any of the allowed special characters (“%”,
-        “@”, “+”, “-”, “_”, and “.”), you must encode them for use in the
-        URL.
+        “@”, “+”, “-”, “_”, and “.”), you must encode them for use in the URL.
         | Special character | Encoding |
         |-------------------|----------|
         | %                 | %25      |

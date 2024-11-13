@@ -17,8 +17,7 @@ class ListPaymentProfilesResponse(object):
     TODO: type model description here.
 
     Attributes:
-        payment_profile (ListPaymentProfileItem): TODO: type description
-            here.
+        payment_profile (ListPaymentProfileItem): TODO: type description here.
 
     """
 

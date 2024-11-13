@@ -84,7 +84,6 @@ result = subscription_components_controller.allocate_components(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -189,13 +188,12 @@ body = UpdateAllocationExpirationDate(
     )
 )
 
-result = subscription_components_controller.update_prepaid_usage_allocation(
+subscription_components_controller.update_prepaid_usage_allocation(
     subscription_id,
     component_id,
     allocation_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -251,13 +249,12 @@ body = CreditSchemeRequest(
     credit_scheme=CreditScheme.NONE
 )
 
-result = subscription_components_controller.delete_prepaid_usage_allocation(
+subscription_components_controller.delete_prepaid_usage_allocation(
     subscription_id,
     component_id,
     allocation_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -365,7 +362,6 @@ result = subscription_components_controller.create_usage(
     component_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -424,7 +420,6 @@ result = subscription_components_controller.read_subscription_component(
     subscription_id,
     component_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -504,7 +499,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'include': ListSubscriptionComponentsInclude.SUBSCRIPTION
 }
 result = subscription_components_controller.list_subscription_components(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -564,7 +558,6 @@ def reset_subscription_components_price_points(self,
 subscription_id = 'subscription_id0'
 
 result = subscription_components_controller.reset_subscription_components_price_points(subscription_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -705,7 +698,7 @@ def list_allocations(self,
 |  --- | --- | --- | --- |
 | `subscription_id` | `str` | Template, Required | The Chargify id of the subscription |
 | `component_id` | `int` | Template, Required | The Chargify id of the component |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
 
 ## Response Type
 
@@ -725,7 +718,6 @@ result = subscription_components_controller.list_allocations(
     component_id,
     page=page
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -801,8 +793,8 @@ def list_usages(self,
 | `max_id` | `int` | Query, Optional | Returns usages with an id less than or equal to the one specified |
 | `since_date` | `str` | Query, Optional | Returns usages with a created_at date greater than or equal to midnight (12:00 AM) on the date specified. |
 | `until_date` | `str` | Query, Optional | Returns usages with a created_at date less than or equal to midnight (12:00 AM) on the date specified. |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 
 ## Response Type
 
@@ -818,7 +810,6 @@ collect = {
     'per_page': 50
 }
 result = subscription_components_controller.list_usages(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -887,11 +878,10 @@ subscription_id = 222
 
 component_id = 222
 
-result = subscription_components_controller.activate_event_based_component(
+subscription_components_controller.activate_event_based_component(
     subscription_id,
     component_id
 )
-print(result)
 ```
 
 
@@ -985,7 +975,6 @@ result = subscription_components_controller.allocate_component(
     component_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1067,7 +1056,6 @@ result = subscription_components_controller.preview_allocations(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1208,11 +1196,10 @@ subscription_id = 222
 
 component_id = 222
 
-result = subscription_components_controller.deactivate_event_based_component(
+subscription_components_controller.deactivate_event_based_component(
     subscription_id,
     component_id
 )
-print(result)
 ```
 
 
@@ -1269,7 +1256,6 @@ result = subscription_components_controller.update_subscription_components_price
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1333,20 +1319,14 @@ subdomain = 'subdomain4'
 api_handle = 'api_handle6'
 
 body = [
-    EBBEvent(
-        chargify=ChargifyEBB(
-            timestamp='2020-02-27T17:45:50-05:00',
-            subscription_id=1
-        )
-    )
+    EBBEvent()
 ]
 
-result = subscription_components_controller.record_events(
+subscription_components_controller.record_events(
     subdomain,
     api_handle,
     body=body
 )
-print(result)
 ```
 
 
@@ -1363,8 +1343,8 @@ def list_subscription_components_for_site(self,
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `sort` | [`ListSubscriptionComponentsSort`](../../doc/models/list-subscription-components-sort.md) | Query, Optional | The attribute by which to sort. Use in query: `sort=updated_at`. |
 | `direction` | [Sorting direction](../../doc/models/sorting-direction.md) \| None | Query, Optional | This is a container for one-of cases. |
 | `date_field` | [`SubscriptionListDateField`](../../doc/models/subscription-list-date-field.md) | Query, Optional | The type of filter you'd like to apply to your search. Use in query: `date_field=updated_at`. |
@@ -1372,7 +1352,7 @@ def list_subscription_components_for_site(self,
 | `start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns components with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site''s time zone will be used. If provided, this parameter will be used instead of start_date. Use in query `start_datetime=2022-07-01 09:00:05`. |
 | `end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns components with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. Use in query `end_date=2011-12-16`. |
 | `end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns components with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site''s time zone will be used. If provided, this parameter will be used instead of end_date. Use in query `end_datetime=2022-07-01 09:00:05`. |
-| `subscription_ids` | `List[int]` | Query, Optional | Allows fetching components allocation with matching subscription id based on provided ids. Use in query `subscription_ids=1,2,3`. |
+| `subscription_ids` | `List[int]` | Query, Optional | Allows fetching components allocation with matching subscription id based on provided ids. Use in query `subscription_ids=1,2,3`.<br>**Constraints**: *Minimum Items*: `1`, *Maximum Items*: `200` |
 | `price_point_ids` | [`IncludeNotNull`](../../doc/models/include-not-null.md) | Query, Optional | Allows fetching components allocation only if price point id is present. Use in query `price_point_ids=not_null`. |
 | `product_family_ids` | `List[int]` | Query, Optional | Allows fetching components allocation with matching product family id based on provided ids. Use in query `product_family_ids=1,2,3`. |
 | `include` | [`ListSubscriptionComponentsInclude`](../../doc/models/list-subscription-components-include.md) | Query, Optional | Allows including additional data in the response. Use in query `include=subscription`. |
@@ -1411,7 +1391,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'include': ListSubscriptionComponentsInclude.SUBSCRIPTION
 }
 result = subscription_components_controller.list_subscription_components_for_site(collect)
-print(result)
 ```
 
 
@@ -1465,18 +1444,9 @@ subdomain = 'subdomain4'
 
 api_handle = 'api_handle6'
 
-body = EBBEvent(
-    chargify=ChargifyEBB(
-        timestamp='2020-02-27T17:45:50-05:00',
-        subscription_id=1
-    )
-)
-
-result = subscription_components_controller.record_event(
+subscription_components_controller.record_event(
     subdomain,
-    api_handle,
-    body=body
+    api_handle
 )
-print(result)
 ```
 

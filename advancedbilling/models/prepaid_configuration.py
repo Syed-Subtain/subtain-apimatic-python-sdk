@@ -20,8 +20,7 @@ class PrepaidConfiguration(object):
         initial_funding_amount_in_cents (int): TODO: type description here.
         replenish_to_amount_in_cents (int): TODO: type description here.
         auto_replenish (bool): TODO: type description here.
-        replenish_threshold_amount_in_cents (int): TODO: type description
-            here.
+        replenish_threshold_amount_in_cents (int): TODO: type description here.
 
     """
 

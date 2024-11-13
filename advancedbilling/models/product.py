@@ -42,8 +42,7 @@ class Product(object):
             renew every 30 days
         interval_unit (IntervalUnit | None): A string representing the
             interval unit for this product, either month or day
-        initial_charge_in_cents (int): The up front charge you have
-            specified.
+        initial_charge_in_cents (int): The up front charge you have specified.
         trial_price_in_cents (int): The price of the trial period for a
             subscription to this product, in integer cents.
         trial_interval (int): A numerical interval for the length of the trial
@@ -52,8 +51,7 @@ class Product(object):
             interval unit to calculate the full interval
         trial_interval_unit (IntervalUnit | None): A string representing the
             trial interval unit for this product, either month or day
-        archived_at (str): Timestamp indicating when this product was
-            archived
+        archived_at (str): Timestamp indicating when this product was archived
         require_credit_card (bool): Boolean that controls whether a payment
             profile is required to be entered for customers wishing to sign up
             on this product.
@@ -75,8 +73,7 @@ class Product(object):
             request a billing address on any Self-Service Pages that are used
             by subscribers of this product.
         require_billing_address (bool): A boolean indicating whether a billing
-            address is required to add a payment profile, especially at
-            signup.
+            address is required to add a payment profile, especially at signup.
         require_shipping_address (bool): A boolean indicating whether a
             shipping address is required for the customer, especially at
             signup.

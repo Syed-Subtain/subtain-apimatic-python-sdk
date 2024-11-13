@@ -65,7 +65,6 @@ body = CreateSubscriptionRequest(
 result = proforma_invoices_controller.preview_signup_proforma_invoice(
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -108,7 +107,6 @@ def create_proforma_invoice(self,
 subscription_id = 'subscription_id0'
 
 result = proforma_invoices_controller.create_proforma_invoice(subscription_id)
-print(result)
 ```
 
 ## Errors
@@ -136,15 +134,15 @@ def list_proforma_invoices(self,
 | `start_date` | `str` | Query, Optional | The beginning date range for the invoice's Due Date, in the YYYY-MM-DD format. |
 | `end_date` | `str` | Query, Optional | The ending date range for the invoice's Due Date, in the YYYY-MM-DD format. |
 | `status` | [`Status`](../../doc/models/status.md) | Query, Optional | The current status of the invoice.  Allowed Values: draft, open, paid, pending, voided |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
-| `direction` | [`Direction`](../../doc/models/direction.md) | Query, Optional | The sort direction of the returned invoices. |
-| `line_items` | `bool` | Query, Optional | Include line items data |
-| `discounts` | `bool` | Query, Optional | Include discounts data |
-| `taxes` | `bool` | Query, Optional | Include taxes data |
-| `credits` | `bool` | Query, Optional | Include credits data |
-| `payments` | `bool` | Query, Optional | Include payments data |
-| `custom_fields` | `bool` | Query, Optional | Include custom fields data |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
+| `direction` | [`Direction`](../../doc/models/direction.md) | Query, Optional | The sort direction of the returned invoices.<br>**Default**: `'desc'` |
+| `line_items` | `bool` | Query, Optional | Include line items data<br>**Default**: `False` |
+| `discounts` | `bool` | Query, Optional | Include discounts data<br>**Default**: `False` |
+| `taxes` | `bool` | Query, Optional | Include taxes data<br>**Default**: `False` |
+| `credits` | `bool` | Query, Optional | Include credits data<br>**Default**: `False` |
+| `payments` | `bool` | Query, Optional | Include payments data<br>**Default**: `False` |
+| `custom_fields` | `bool` | Query, Optional | Include custom fields data<br>**Default**: `False` |
 
 ## Response Type
 
@@ -166,7 +164,6 @@ collect = {
     'custom_fields': False
 }
 result = proforma_invoices_controller.list_proforma_invoices(collect)
-print(result)
 ```
 
 
@@ -205,7 +202,6 @@ def void_proforma_invoice(self,
 proforma_invoice_uid = 'proforma_invoice_uid4'
 
 result = proforma_invoices_controller.void_proforma_invoice(proforma_invoice_uid)
-print(result)
 ```
 
 ## Errors
@@ -247,8 +243,7 @@ def create_consolidated_proforma_invoice(self,
 ```python
 uid = 'uid0'
 
-result = proforma_invoices_controller.create_consolidated_proforma_invoice(uid)
-print(result)
+proforma_invoices_controller.create_consolidated_proforma_invoice(uid)
 ```
 
 ## Errors
@@ -285,7 +280,6 @@ def list_subscription_group_proforma_invoices(self,
 uid = 'uid0'
 
 result = proforma_invoices_controller.list_subscription_group_proforma_invoices(uid)
-print(result)
 ```
 
 ## Errors
@@ -325,7 +319,6 @@ def read_proforma_invoice(self,
 proforma_invoice_uid = 242
 
 result = proforma_invoices_controller.read_proforma_invoice(proforma_invoice_uid)
-print(result)
 ```
 
 ## Errors
@@ -367,7 +360,6 @@ def preview_proforma_invoice(self,
 subscription_id = 'subscription_id0'
 
 result = proforma_invoices_controller.preview_proforma_invoice(subscription_id)
-print(result)
 ```
 
 ## Errors
@@ -421,7 +413,6 @@ body = CreateSubscriptionRequest(
 result = proforma_invoices_controller.create_signup_proforma_invoice(
     body=body
 )
-print(result)
 ```
 
 ## Errors

@@ -72,9 +72,13 @@ class CreatePrepaidComponent(object):
         """
 
         if isinstance(dictionary, cls):
-            return APIHelper.is_valid_type(value=dictionary.prepaid_usage_component, type_callable=lambda value: PrepaidUsageComponent.validate(value))
+            return APIHelper.is_valid_type(value=dictionary.prepaid_usage_component,
+                                           type_callable=lambda value: PrepaidUsageComponent.validate(value),
+                                           is_model_dict=True)
 
         if not isinstance(dictionary, dict):
             return False
 
-        return APIHelper.is_valid_type(value=dictionary.get('prepaid_usage_component'), type_callable=lambda value: PrepaidUsageComponent.validate(value))
+        return APIHelper.is_valid_type(value=dictionary.get('prepaid_usage_component'),
+                                       type_callable=lambda value: PrepaidUsageComponent.validate(value),
+                                       is_model_dict=True)

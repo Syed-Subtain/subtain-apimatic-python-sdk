@@ -104,8 +104,7 @@ class SubscriptionGroupInvoiceAccountController(BaseController):
                         with which to filter the date_field. Returns
                         prepayments with a timestamp up to and including
                         11:59:59PM in your site's time zone on the date
-                        specified. Use in query:
-                        `filter[end_date]=2011-12-15`.
+                        specified. Use in query: `filter[end_date]=2011-12-15`.
                     filter_start_date -- str -- The start date (format
                         YYYY-MM-DD) with which to filter the date_field.
                         Returns prepayments with a timestamp at or after
@@ -128,8 +127,7 @@ class SubscriptionGroupInvoiceAccountController(BaseController):
                         `per_page=200`.
 
         Returns:
-            ListSubscriptionGroupPrepaymentResponse: Response from the API.
-                OK
+            ListSubscriptionGroupPrepaymentResponse: Response from the API. OK
 
         Raises:
             APIException: When an error occurs while fetching the data from

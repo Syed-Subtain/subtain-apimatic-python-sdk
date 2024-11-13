@@ -73,7 +73,6 @@ body = CreateOfferRequest(
 result = offers_controller.create_offer(
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -141,7 +140,6 @@ def list_offers(self)
 
 ```python
 result = offers_controller.list_offers()
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -226,7 +224,6 @@ def read_offers(self,
 offer_id = 130
 
 result = offers_controller.read_offers(offer_id)
-print(result)
 ```
 
 ## Errors
@@ -260,8 +257,7 @@ def unarchive_offer(self,
 ```python
 offer_id = 130
 
-result = offers_controller.unarchive_offer(offer_id)
-print(result)
+offers_controller.unarchive_offer(offer_id)
 ```
 
 ## Errors
@@ -295,8 +291,7 @@ def archive_offer(self,
 ```python
 offer_id = 130
 
-result = offers_controller.archive_offer(offer_id)
-print(result)
+offers_controller.archive_offer(offer_id)
 ```
 
 ## Errors

@@ -21,8 +21,7 @@ class UpdateSegment(object):
             options: per_unit, volume, tiered, stairstep. See [Price Bracket
             Rules](https://help.chargify.com/products/product-components.html#p
             rice-bracket-rules) for an overview of pricing schemes.
-        prices (List[CreateOrUpdateSegmentPrice]): TODO: type description
-            here.
+        prices (List[CreateOrUpdateSegmentPrice]): TODO: type description here.
 
     """
 

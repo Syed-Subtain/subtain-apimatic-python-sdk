@@ -72,9 +72,13 @@ class CreateQuantityBasedComponent(object):
         """
 
         if isinstance(dictionary, cls):
-            return APIHelper.is_valid_type(value=dictionary.quantity_based_component, type_callable=lambda value: QuantityBasedComponent.validate(value))
+            return APIHelper.is_valid_type(value=dictionary.quantity_based_component,
+                                           type_callable=lambda value: QuantityBasedComponent.validate(value),
+                                           is_model_dict=True)
 
         if not isinstance(dictionary, dict):
             return False
 
-        return APIHelper.is_valid_type(value=dictionary.get('quantity_based_component'), type_callable=lambda value: QuantityBasedComponent.validate(value))
+        return APIHelper.is_valid_type(value=dictionary.get('quantity_based_component'),
+                                       type_callable=lambda value: QuantityBasedComponent.validate(value),
+                                       is_model_dict=True)

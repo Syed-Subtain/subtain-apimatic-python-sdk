@@ -55,7 +55,6 @@ def read_component_by_handle(self,
 handle = 'handle6'
 
 result = components_controller.read_component_by_handle(handle)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -108,8 +107,8 @@ def list_components(self,
 | `start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns components with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. |
 | `end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns components with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date.  optional |
 | `include_archived` | `bool` | Query, Optional | Include archived items |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `filter_ids` | `List[str]` | Query, Optional | Allows fetching components with matching id based on provided value. Use in query `filter[ids]=1,2,3`. |
 | `filter_use_site_exchange_rate` | `bool` | Query, Optional | Allows fetching components with matching use_site_exchange_rate based on provided value (refers to default price point). Use in query `filter[use_site_exchange_rate]=true`. |
 
@@ -126,7 +125,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'per_page': 50
 }
 result = components_controller.list_components(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -243,7 +241,7 @@ def read_component_by_id(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `product_family_id` | `int` | Template, Required | The Chargify id of the product family to which the component belongs |
-| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:` |
+| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:`<br>**Constraints**: *Pattern*: `/\A(?:\d+\|handle:(?:uuid:\|[a-z])(?:\w\|-)+)\z/` |
 
 ## Response Type
 
@@ -260,7 +258,6 @@ result = components_controller.read_component_by_id(
     product_family_id,
     component_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -312,7 +309,7 @@ def update_product_family_component(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `product_family_id` | `int` | Template, Required | The Chargify id of the product family to which the component belongs |
-| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:` |
+| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:`<br>**Constraints**: *Pattern*: `/\A(?:\d+\|handle:(?:uuid:\|[a-z])(?:\w\|-)+)\z/` |
 | `body` | [`UpdateComponentRequest`](../../doc/models/update-component-request.md) | Body, Optional | - |
 
 ## Response Type
@@ -337,7 +334,6 @@ result = components_controller.update_product_family_component(
     component_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -442,7 +438,6 @@ result = components_controller.create_component(
     component_kind,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -500,7 +495,7 @@ def archive_component(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `product_family_id` | `int` | Template, Required | The Chargify id of the product family to which the component belongs |
-| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:` |
+| `component_id` | `str` | Template, Required | Either the Chargify id of the component or the handle for the component prefixed with `handle:`<br>**Constraints**: *Pattern*: `/\A(?:\d+\|handle:(?:uuid:\|[a-z])(?:\w\|-)+)\z/` |
 
 ## Response Type
 
@@ -517,7 +512,6 @@ result = components_controller.archive_component(
     product_family_id,
     component_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -617,7 +611,6 @@ result = components_controller.update_component_price_point(
     price_point_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -653,7 +646,6 @@ result = components_controller.archive_component_price_point(
     component_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -740,7 +732,6 @@ result = components_controller.create_component_price_point(
     component_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -776,11 +767,10 @@ component_id = 222
 
 price_point_id = 10
 
-result = components_controller.update_default_price_point_for_component(
+components_controller.update_default_price_point_for_component(
     component_id,
     price_point_id
 )
-print(result)
 ```
 
 
@@ -818,11 +808,10 @@ body = UpdateComponentRequest(
     )
 )
 
-result = components_controller.update_component(
+components_controller.update_component(
     component_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -847,8 +836,8 @@ def list_component_price_points(self,
 |  --- | --- | --- | --- |
 | `component_id` | `int` | Template, Required | The Chargify id of the component |
 | `currency_prices` | `bool` | Query, Optional | Include an array of currency price data |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `filter_type` | [`List[PricePointType]`](../../doc/models/price-point-type.md) | Query, Optional | Use in query: `filter[type]=catalog,default`. |
 
 ## Response Type
@@ -864,7 +853,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')
     'per_page': 50
 }
 result = components_controller.list_component_price_points(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -934,8 +922,8 @@ def list_all_component_price_points(self,
 | `filter_end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns price points with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. |
 | `filter_end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns price points with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. |
 | `include` | [`ListComponentsPricePointsInclude`](../../doc/models/list-components-price-points-include.md) | Query, Optional | Allows including additional data in the response. Use in query: `include=currency_prices`. |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `filter_start_date` | `str` | Query, Optional | The start date (format YYYY-MM-DD) with which to filter the date_field. Returns price points with a timestamp at or after midnight (12:00:00 AM) in your site’s time zone on the date specified. |
 | `filter_start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns price points with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. |
 | `filter_type` | [`PricePointType`](../../doc/models/price-point-type.md) | Query, Optional | Allows fetching price points with matching type. Use in query: `filter[type]=custom,catalog`. |
@@ -956,7 +944,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'per_page': 50
 }
 result = components_controller.list_all_component_price_points(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1015,8 +1002,8 @@ def list_components_for_product_family(self,
 | `product_family_id` | `int` | Template, Required | The Chargify id of the product family |
 | `include_archived` | `bool` | Query, Optional | Include archived items. |
 | `filter_ids` | `List[int]` | Query, Optional | Allows fetching components with matching id based on provided value. Use in query `filter[ids]=1,2`. |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `date_field` | [`BasicDateField`](../../doc/models/basic-date-field.md) | Query, Optional | The type of filter you would like to apply to your search. Use in query `date_field=created_at`. |
 | `end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns components with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. |
 | `end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns components with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. optional. |
@@ -1038,7 +1025,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')Liquid error: Va
     'date_field': BasicDateField.UPDATED_AT
 }
 result = components_controller.list_components_for_product_family(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1206,7 +1192,6 @@ result = components_controller.create_component_price_points(
     component_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1291,7 +1276,6 @@ result = components_controller.unarchive_component_price_point(
     component_id,
     price_point_id
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1378,7 +1362,6 @@ result = components_controller.create_currency_prices(
     price_point_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -1427,6 +1410,5 @@ result = components_controller.update_currency_prices(
     price_point_id,
     body=body
 )
-print(result)
 ```
 

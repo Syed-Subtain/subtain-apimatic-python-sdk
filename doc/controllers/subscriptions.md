@@ -692,7 +692,6 @@ body = CreateSubscriptionRequest(
 result = subscriptions_controller.create_subscription(
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -894,11 +893,10 @@ body = OverrideSubscriptionRequest(
     )
 )
 
-result = subscriptions_controller.override_subscription(
+subscriptions_controller.override_subscription(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Errors
@@ -978,7 +976,6 @@ def activate_subscription(self,
 subscription_id = 'subscription_id0'
 
 result = subscriptions_controller.activate_subscription(subscription_id)
-print(result)
 ```
 
 ## Errors
@@ -1026,11 +1023,10 @@ subscription_id = 'subscription_id0'
 
 ack = 252
 
-Liquid error: Value cannot be null. (Parameter 'key')result = subscriptions_controller.purge_subscription(Liquid error: Value cannot be null. (Parameter 'key')
+Liquid error: Value cannot be null. (Parameter 'key')subscriptions_controller.purge_subscription(Liquid error: Value cannot be null. (Parameter 'key')
     subscription_id,
     ack
 )
-print(result)
 ```
 
 ## Errors
@@ -1071,7 +1067,6 @@ def read_subscription(self,
 subscription_id = 'subscription_id0'
 
 Liquid error: Value cannot be null. (Parameter 'key')result = subscriptions_controller.read_subscription(Liquid error: Value cannot be null. (Parameter 'key')subscription_id)
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1269,7 +1264,6 @@ body = CreateSubscriptionRequest(
 result = subscriptions_controller.preview_subscription(
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1422,7 +1416,6 @@ def delete_coupon_from_subscription(self,
 subscription_id = 'subscription_id0'
 
 result = subscriptions_controller.delete_coupon_from_subscription(subscription_id)
-print(result)
 ```
 
 ## Example Response
@@ -1459,8 +1452,8 @@ def list_subscriptions(self,
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `state` | [`SubscriptionState`](../../doc/models/subscription-state.md) | Query, Optional | The current state of the subscription |
 | `product` | `int` | Query, Optional | The product id of the subscription. (Note that the product handle cannot be used.) |
 | `product_price_point_id` | `int` | Query, Optional | The ID of the product price point. If supplied, product is required |
@@ -1472,7 +1465,7 @@ def list_subscriptions(self,
 | `end_datetime` | `datetime` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns subscriptions with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. Use in query `end_datetime=2022-08-01 10:00:05`. |
 | `metadata` | `Dict[str, str]` | Query, Optional | The value of the metadata field specified in the parameter. Use in query `metadata[my-field]=value&metadata[other-field]=another_value`. |
 | `direction` | [Sorting direction](../../doc/models/sorting-direction.md) \| None | Query, Optional | This is a container for one-of cases. |
-| `sort` | [`SubscriptionSort`](../../doc/models/subscription-sort.md) | Query, Optional | The attribute by which to sort |
+| `sort` | [`SubscriptionSort`](../../doc/models/subscription-sort.md) | Query, Optional | The attribute by which to sort<br>**Default**: `'signup_date'` |
 
 ## Response Type
 
@@ -1491,7 +1484,6 @@ collect = {
     'sort': SubscriptionSort.SIGNUP_DATE
 }
 result = subscriptions_controller.list_subscriptions(collect)
-print(result)
 ```
 
 
@@ -1576,7 +1568,6 @@ result = subscriptions_controller.update_subscription(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1719,7 +1710,6 @@ def read_subscription_by_reference(self,
 
 ```python
 result = subscriptions_controller.read_subscription_by_reference()
-print(result)
 ```
 
 
@@ -1762,7 +1752,6 @@ result = subscriptions_controller.create_prepaid_subscription(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -1825,7 +1814,6 @@ result = subscriptions_controller.apply_coupon_to_subscription(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*

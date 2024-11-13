@@ -79,10 +79,12 @@ class IssueServiceCredit(object):
 
         if isinstance(dictionary, cls):
             return UnionTypeLookUp.get('IssueServiceCreditAmount').validate(dictionary.amount).is_valid \
-                and APIHelper.is_valid_type(value=dictionary.memo, type_callable=lambda value: isinstance(value, str))
+                and APIHelper.is_valid_type(value=dictionary.memo,
+                                            type_callable=lambda value: isinstance(value, str))
 
         if not isinstance(dictionary, dict):
             return False
 
         return UnionTypeLookUp.get('IssueServiceCreditAmount').validate(dictionary.get('amount')).is_valid \
-            and APIHelper.is_valid_type(value=dictionary.get('memo'), type_callable=lambda value: isinstance(value, str))
+            and APIHelper.is_valid_type(value=dictionary.get('memo'),
+                                        type_callable=lambda value: isinstance(value, str))

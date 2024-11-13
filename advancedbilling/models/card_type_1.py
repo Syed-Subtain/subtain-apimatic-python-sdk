@@ -129,3 +129,4 @@ class CardType1(object):
 
         """
         return value in cls._all_values
+   

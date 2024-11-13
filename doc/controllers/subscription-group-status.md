@@ -40,8 +40,7 @@ def stop_delayed_cancellation_for_group(self,
 ```python
 uid = 'uid0'
 
-result = subscription_group_status_controller.stop_delayed_cancellation_for_group(uid)
-print(result)
+subscription_group_status_controller.stop_delayed_cancellation_for_group(uid)
 ```
 
 ## Errors
@@ -103,7 +102,6 @@ result = subscription_group_status_controller.reactivate_subscription_group(
     uid,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -158,8 +156,7 @@ def initiate_delayed_cancellation_for_group(self,
 ```python
 uid = 'uid0'
 
-result = subscription_group_status_controller.initiate_delayed_cancellation_for_group(uid)
-print(result)
+subscription_group_status_controller.initiate_delayed_cancellation_for_group(uid)
 ```
 
 ## Errors
@@ -201,11 +198,10 @@ body = CancelGroupedSubscriptionsRequest(
     charge_unbilled_usage=True
 )
 
-result = subscription_group_status_controller.cancel_subscriptions_in_group(
+subscription_group_status_controller.cancel_subscriptions_in_group(
     uid,
     body=body
 )
-print(result)
 ```
 
 ## Errors

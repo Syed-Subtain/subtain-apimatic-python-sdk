@@ -57,7 +57,6 @@ result = subscription_products_controller.preview_subscription_product_migration
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -175,7 +174,6 @@ result = subscription_products_controller.migrate_subscription_product(
     subscription_id,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*

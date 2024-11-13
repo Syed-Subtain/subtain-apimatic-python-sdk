@@ -58,10 +58,8 @@ class Component(object):
         recurring (bool): TODO: type description here.
         upgrade_charge (str): TODO: type description here.
         downgrade_credit (str): TODO: type description here.
-        created_at (str): Timestamp indicating when this component was
-            created
-        updated_at (str): Timestamp indicating when this component was
-            updated
+        created_at (str): Timestamp indicating when this component was created
+        updated_at (str): Timestamp indicating when this component was updated
         archived_at (str): Timestamp indicating when this component was
             archived
         hide_date_range_on_invoice (bool): (Only available on Relationship

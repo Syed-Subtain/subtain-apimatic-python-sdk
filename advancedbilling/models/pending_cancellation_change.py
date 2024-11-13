@@ -76,11 +76,15 @@ class PendingCancellationChange(object):
         """
 
         if isinstance(dictionary, cls):
-            return APIHelper.is_valid_type(value=dictionary.cancellation_state, type_callable=lambda value: isinstance(value, str)) \
-                and APIHelper.is_valid_type(value=dictionary.cancels_at, type_callable=lambda value: isinstance(value, str))
+            return APIHelper.is_valid_type(value=dictionary.cancellation_state,
+                                           type_callable=lambda value: isinstance(value, str)) \
+                and APIHelper.is_valid_type(value=dictionary.cancels_at,
+                                            type_callable=lambda value: isinstance(value, str))
 
         if not isinstance(dictionary, dict):
             return False
 
-        return APIHelper.is_valid_type(value=dictionary.get('cancellation_state'), type_callable=lambda value: isinstance(value, str)) \
-            and APIHelper.is_valid_type(value=dictionary.get('cancels_at'), type_callable=lambda value: isinstance(value, str))
+        return APIHelper.is_valid_type(value=dictionary.get('cancellation_state'),
+                                       type_callable=lambda value: isinstance(value, str)) \
+            and APIHelper.is_valid_type(value=dictionary.get('cancels_at'),
+                                        type_callable=lambda value: isinstance(value, str))

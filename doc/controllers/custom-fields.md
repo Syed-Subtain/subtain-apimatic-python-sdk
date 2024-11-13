@@ -89,7 +89,6 @@ result = custom_fields_controller.create_metafields(
     resource_type,
     body=body
 )
-print(result)
 ```
 
 ## Example Response *(as JSON)*
@@ -154,8 +153,7 @@ def delete_metafield(self,
 ```python
 resource_type = ResourceType.SUBSCRIPTIONS
 
-result = custom_fields_controller.delete_metafield(resource_type)
-print(result)
+custom_fields_controller.delete_metafield(resource_type)
 ```
 
 ## Errors
@@ -184,8 +182,8 @@ def read_metadata(self,
 |  --- | --- | --- | --- |
 | `resource_type` | [`ResourceType`](../../doc/models/resource-type.md) | Template, Required | the resource type to which the metafields belong |
 | `resource_id` | `str` | Template, Required | The Chargify id of the customer or the subscription for which the metadata applies |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 
 ## Response Type
 
@@ -201,7 +199,6 @@ collect = {
     'per_page': 50
 }
 result = custom_fields_controller.read_metadata(collect)
-print(result)
 ```
 
 
@@ -241,7 +238,6 @@ result = custom_fields_controller.update_metafield(
     resource_type,
     name
 )
-print(result)
 ```
 
 
@@ -316,7 +312,6 @@ result = custom_fields_controller.create_metadata(
     resource_id,
     body=body
 )
-print(result)
 ```
 
 
@@ -356,7 +351,6 @@ result = custom_fields_controller.update_metadata(
     resource_type,
     resource_id
 )
-print(result)
 ```
 
 
@@ -414,11 +408,10 @@ resource_type = ResourceType.SUBSCRIPTIONS
 
 resource_id = 'resource_id4'
 
-Liquid error: Value cannot be null. (Parameter 'key')result = custom_fields_controller.delete_metadata(Liquid error: Value cannot be null. (Parameter 'key')
+Liquid error: Value cannot be null. (Parameter 'key')custom_fields_controller.delete_metadata(Liquid error: Value cannot be null. (Parameter 'key')
     resource_type,
     resource_id
 )
-print(result)
 ```
 
 ## Errors
@@ -454,15 +447,15 @@ def list_metadata(self,
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `resource_type` | [`ResourceType`](../../doc/models/resource-type.md) | Template, Required | the resource type to which the metafields belong |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `date_field` | [`BasicDateField`](../../doc/models/basic-date-field.md) | Query, Optional | The type of filter you would like to apply to your search. |
 | `start_date` | `str` | Query, Optional | The start date (format YYYY-MM-DD) with which to filter the date_field. Returns metadata with a timestamp at or after midnight (12:00:00 AM) in your site’s time zone on the date specified. |
 | `end_date` | `str` | Query, Optional | The end date (format YYYY-MM-DD) with which to filter the date_field. Returns metadata with a timestamp up to and including 11:59:59PM in your site’s time zone on the date specified. |
 | `start_datetime` | `str` | Query, Optional | The start date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns metadata with a timestamp at or after exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of start_date. |
 | `end_datetime` | `str` | Query, Optional | The end date and time (format YYYY-MM-DD HH:MM:SS) with which to filter the date_field. Returns metadata with a timestamp at or before exact time provided in query. You can specify timezone in query - otherwise your site's time zone will be used. If provided, this parameter will be used instead of end_date. |
 | `with_deleted` | `bool` | Query, Optional | Allow to fetch deleted metadata. |
-| `resource_ids` | `List[int]` | Query, Optional | Allow to fetch metadata for multiple records based on provided ids. Use in query: `resource_ids[]=122&resource_ids[]=123&resource_ids[]=124`. |
+| `resource_ids` | `List[int]` | Query, Optional | Allow to fetch metadata for multiple records based on provided ids. Use in query: `resource_ids[]=122&resource_ids[]=123&resource_ids[]=124`.<br>**Constraints**: *Maximum Items*: `50` |
 | `direction` | [Sorting direction](../../doc/models/sorting-direction.md) \| None | Query, Optional | This is a container for one-of cases. |
 
 ## Response Type
@@ -479,7 +472,6 @@ collect = {Liquid error: Value cannot be null. (Parameter 'key')
     'date_field': BasicDateField.UPDATED_AT
 }
 result = custom_fields_controller.list_metadata(collect)
-print(result)
 ```
 
 
@@ -498,8 +490,8 @@ def list_metafields(self,
 |  --- | --- | --- | --- |
 | `resource_type` | [`ResourceType`](../../doc/models/resource-type.md) | Template, Required | the resource type to which the metafields belong |
 | `name` | `str` | Query, Optional | filter by the name of the metafield |
-| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`. |
-| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`. |
+| `page` | `int` | Query, Optional | Result records are organized in pages. By default, the first page of results is displayed. The page parameter specifies a page number of results to fetch. You can start navigating through the pages to consume the results. You do this by passing in a page parameter. Retrieve the next page by adding ?page=2 to the query string. If there are no results to return, then an empty result set will be returned.<br>Use in query `page=1`.<br>**Default**: `1`<br>**Constraints**: `>= 1` |
+| `per_page` | `int` | Query, Optional | This parameter indicates how many records to fetch in each request. Default value is 20. The maximum allowed values is 200; any per_page value over 200 will be changed to 200.<br>Use in query `per_page=200`.<br>**Default**: `20`<br>**Constraints**: `<= 200` |
 | `direction` | [Sorting direction](../../doc/models/sorting-direction.md) \| None | Query, Optional | This is a container for one-of cases. |
 
 ## Response Type
@@ -515,7 +507,6 @@ collect = {
     'per_page': 50
 }
 result = custom_fields_controller.list_metafields(collect)
-print(result)
 ```
 
 ## Example Response *(as JSON)*

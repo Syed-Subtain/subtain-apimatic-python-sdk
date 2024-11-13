@@ -269,8 +269,7 @@ class ProductsController(BaseController):
                       options=dict()):
         """Does a GET request to /products.json.
 
-        This method allows to retrieve a list of Products belonging to a
-        Site.
+        This method allows to retrieve a list of Products belonging to a Site.
 
         Args:
             options (dict, optional): Key-value pairs for any of the
