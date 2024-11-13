@@ -30,7 +30,7 @@ class BaseController(object):
 
     @staticmethod
     def user_agent():
-        return 'AB SDK Python:9.1.7 on OS {os-info}'
+        return 'AB SDK Python:9.1.8 on OS {os-info}'
 
     @staticmethod
     def user_agent_parameters():
